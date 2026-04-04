@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.sqlite3
+
+# Environments
+.env
+.env.*
+
+# Virtual environment
+.venv/
+
+
+# Django
+media/
+staticfiles/
+
+# IDE
+.idea/
+
+# Project
+notes/
+
+# Allowed examples
+!.env.example
