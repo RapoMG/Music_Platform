@@ -1,0 +1,33 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: django_music_platform
+    restart: unless-stopped
+    command: sh /app/docker/django/entrypoint.sh
+    #command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+      - ./docker:/app/docker
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16
+    container_name: music_platform_db
+    restart: unless-stopped
+    env_file:
+      - ./.env.dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+  

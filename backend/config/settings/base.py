@@ -22,11 +22,11 @@ if str(APPS_DIR) not in sys.path:
     sys.path.insert(0, str(APPS_DIR))
 
 
-
 # -----------------------
 # Environment
 # -----------------------
 env = environ.Env()
+environ.Env.read_env(BASE_DIR.parent / ".env.dev")
 
 
 # Quick-start development settings - unsuitable for production
@@ -90,7 +90,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
+    # 'default': env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env("POSTGRES_DB"),
+        "USER": env("POSTGRES_USER"),
+        "PASSWORD": env("POSTGRES_PASSWORD"),
+        "HOST": env("DB_HOST", default="postgres"),
+        "PORT": env("DB_PORT", default="5432"),
+    }
 }
 
 
