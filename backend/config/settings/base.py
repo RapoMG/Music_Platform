@@ -51,9 +51,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # Third-party
     'rest_framework',
+    'rest_framework.authtoken',
     
+    # Local
     'apps.users',
+    'apps.consumers',
 ]
 
 MIDDLEWARE = [
@@ -82,6 +86,23 @@ TEMPLATES = [
         },
     },
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
+
+
+AUTHENTICATION_BACKENDS = [
+    "apps.users.backends.UsernameOrEmailAccountTypeBackend",  # Custom login auth backend
+]
+
+AUTH_USER_MODEL = "users.User"
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
