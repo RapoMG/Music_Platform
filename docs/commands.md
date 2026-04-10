@@ -5,7 +5,7 @@ All commands below are executed from the project root.
 
 ## With Docker
 
-### Build  add start environment
+### Build add start environment
 Compose only uses a .env file (no extension) next to docker-compose.yml for interpolation. .env.dev must be named explicitly.
 
 ```bash
@@ -24,7 +24,7 @@ docker compose up -d
 docker compose down
 ```
 
-### Execute command inside Docker container
+### Execute command in Terminal while Docker containeris working
 These are the versions of commands run from the IDE terminal or PowerShell
 
 ```bash

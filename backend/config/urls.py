@@ -15,12 +15,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 #from rest_framework import routers
 
 from apps.users.views import ConsumerLoginView, ConsumerLogoutView
 from apps.consumers.views import ConsumerRegisterView, ConsumerProfileView
 from apps.users.views import UserDetailView
+
+from rest_framework import routers
 
 #router = routers.DefaultRouter()
 
@@ -34,5 +36,7 @@ urlpatterns = [
     path('api/consumers/profile/<int:user_id>/', ConsumerProfileView.as_view()),
 
     path('api/users/<int:user_id>/', UserDetailView.as_view()),
+
+    path('api/', include('apps.catalog.urls')),
 
 ]
