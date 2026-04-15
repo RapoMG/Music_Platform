@@ -94,3 +94,25 @@ python backend/manage.py shell
 python backend/manage.py runserver
 ```
 
+## Seed db with fake data
+
+### Artists, albums, songs and genres
+
+```bash
+python manage.py seed_catalog
+```
+arguments:
+    --artists (default=5)
+    --albums (default=3)
+    --songs (default=10)
+    --genres (default=6)
+
+example: 
+```bash
+python manage.py seed_catalog --artists 7 --songs 12
+```
+
+With Docker: 
+```bash
+docker compose exec web python manage.py seed_catalog --artists 7 --songs 12
+```
