@@ -6,7 +6,7 @@ class Artist(models.Model):
     """Artist model. Related to Album model."""
     name = models.CharField(max_length=100)
     description = models.TextField()
-    image = models.ImageField(upload_to='media/artists/')
+    image = models.ImageField(upload_to='media/artists/', null=True, blank=True)
     
     def __str__(self):
         return self.name
@@ -16,7 +16,7 @@ class Album(models.Model):
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE, related_name='albums')
     
     title = models.CharField(max_length=100, default='Untitled')
-    cover = models.ImageField(upload_to='media/albums/')
+    cover = models.ImageField(upload_to='albums/', default='albums/default.png')
     release_date = models.DateField()
 
     published = models.BooleanField(default=False)
