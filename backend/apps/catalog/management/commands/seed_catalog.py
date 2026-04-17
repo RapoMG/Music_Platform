@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import transaction
 
 
 from faker import Faker
@@ -19,7 +20,7 @@ def fetch_random_album_cover():
     url = "https://picsum.photos/300/300"
 
     try:
-        response = requests.get(url, timeout=3)
+        response = requests.get(url, timeout=5)
         response.raise_for_status()
 
         file_name = f"album_{uuid4().hex}.jpg"
@@ -49,6 +50,13 @@ class Command(BaseCommand):
         parser.add_argument('--songs', type=int, default=10, help='Number of songs to create (default=10)')
         parser.add_argument('--genres', type=int, default=6, help='Number of genres to create (default=6)')
 
+    def fake_title():
+        """
+        Generate random band name or title.
+        """
+        fake = Faker('en_US')
+        return fake.sentence(randint(1,4)).title().replace(".", "")
+
     def handle(self, *args, **options):
         # Number of created objects
         art_no = options['artists']
@@ -67,8 +75,8 @@ class Command(BaseCommand):
         pre_genres = ['Blues','Country','Classical','Dance','Electronic','Folk','Funk','HipHop','Jazz','Pop','Punk','Regae','Rock','Metal',]
 
         # Removing existing genres from the list
-        ex = Genre.objects.values_list('name', flat=True)
-        pre_genres = list(set(pre_genres) - set(ex))
+        ex = set(Genre.objects.values_list('name', flat=True))
+        pre_genres = [g for g in pre_genres if g not in ex]
 
         # Limit number of genres
         if gen_no > len(pre_genres):
@@ -80,50 +88,47 @@ class Command(BaseCommand):
         
         fake = Faker('en_US')
 
-        # Genres 
-        # Random genres from pre_genres list, repeated gen_no times
-        genres = [Genre.objects.create(name=gen) for gen in sample(pre_genres, gen_no)]
-        
-
-        # Artists
-        artists = []
-        for _ in range(art_no):
-            # Fake Band name
-            name = fake.sentence(randint(1,4))
-            name = name.title().replace(".", "")
+        with transaction.atomic():
+            # Genres 
+            # Random genres from pre_genres list, repeated gen_no times
+            genres = [Genre.objects.create(name=gen) for gen in sample(pre_genres, gen_no)]
             
-            artists.append(Artist.objects.create(name=name, description=fake.paragraph(10, True)))
 
-        # Albums
-        albums = 0
-        songs = 0
-        for artist in artists:
-            for _ in range(alb_no):
-                album = Album.objects.create(
-                    artist=artist,
-                    title=fake.sentence(randint(1,4)).title().replace(".", ""),
-                    cover=fetch_random_album_cover(),
-                    release_date=fake.date_object(),
-                    published=True,
-                )
-                album.genre.set(sample(genres, randint(1, 3)))
-                cover = fetch_random_album_cover()
-                if cover:
-                    album.cover.save(cover.name, cover, save=True)
-                albums += 1
+            # Artists
+            artists = []
+            for _ in range(art_no):
+                artists.append(Artist.objects.create(name=self.fake_title(), description=fake.paragraph(10, True)))
 
-                # Songs
-                for track in range(song_no):
-                    song = Song.objects.create(
-                        album=album,
-                        title=fake.sentence(randint(1,4)).title().replace(".", ""),
-                        track_no=track+1,
-                        length=timedelta(minutes=randint(1,5), seconds=randint(0,59)),
-                        lyrics=fake.paragraph(),
+            # Albums
+            albums = 0
+            songs = 0
+            for artist in artists:
+                for _ in range(alb_no):
+                    album = Album.objects.create(
+                        artist=artist,
+                        title=self.fake_title(),
+                        release_date=fake.date_object(),
+                        published=True,
                     )
-                    song_name = f"track_{track+1}_{uuid4().hex}.mp3"
-                    song.file.save(song_name, SimpleUploadedFile(song_name, b"file_content"), save=True)
-                    songs += 1
+                    album.genre.set(sample(genres, randint(1, 3)))
+                    cover = fetch_random_album_cover()
+                    if cover:
+                        album.cover.save(cover.name, cover, save=True)
+                    albums += 1
+
+                    # Songs
+                    for track in range(song_no):
+                        song_name = f"track_{track+1}_{uuid4().hex}.mp3"
+                        file = SimpleUploadedFile(song_name, b"file_content")
+                        Song.objects.create(
+                            album=album,
+                            title=self.fake_title(),
+                            track_no=track+1,
+                            length=timedelta(minutes=randint(1,5), seconds=randint(0,59)),
+                            lyrics=fake.paragraph(),
+                            file=file
+                        )                      
+                        songs += 1
 
         
         # Summary
@@ -140,10 +145,10 @@ class Command(BaseCommand):
         """
         Remove all genres, artists, albums and songs. Returns True if data was removed.
         """
-        genres = Genre.objects.all()
-        artists = Artist.objects.all()
-        albums = Album.objects.all()
-        songs = Song.objects.all()
+        genres = list(Genre.objects.all())
+        artists = list(Artist.objects.all())
+        albums = list(Album.objects.all())
+        songs = list(Song.objects.all())
 
         # single or plural
         genres_msg = f'{len(genres)} {"genre" if len(genres) == 1 else "genres"}'
@@ -159,10 +164,10 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('Delete it before creating new ones? [Y/N]'))
             answ = input()
             if answ.lower().strip() == 'y':
-                genres.delete()
-                artists.delete()
-                albums.delete()
-                songs.delete()
+                Song.objects.all().delete()
+                Album.objects.all().delete()
+                Artist.objects.all().delete()
+                Genre.objects.all().delete()
                 self.stdout.write(self.style.SUCCESS('Old data removed.'))
                 return True
             else:
