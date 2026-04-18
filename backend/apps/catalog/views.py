@@ -1,8 +1,7 @@
-# from django.shortcuts import render
-from django.shortcuts import get_object_or_404, get_list_or_404
+from django.http import FileResponse
 
-from rest_framework import viewsets
-from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import action
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from apps.catalog.models import Album, Artist, Song, Genre
@@ -11,26 +10,17 @@ from apps.catalog.serializers import AlbumSerializer, ArtistSerializer, SongSeri
 # Create your views here.
 
 
-# Tasks:
-#1. get artist with all albums
-#2. get all artists
-#3. get album with all songs
-#4. get all albums from selected genre
-
-
 class ArtistViewSet(ReadOnlyModelViewSet):
     """Get artist with all albums"""
     queryset = Artist.objects.prefetch_related('albums')
     serializer_class = ArtistSerializer
-
-    def perform_create(self, serializer):
-        """Save the owner atribute when creating an artist."""
-        serializer.save(owner=self.request.user)
+    permission_classes = [AllowAny]
 
 
 class GenreViewSet(ReadOnlyModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         """Get all albums from selected genre"""
@@ -46,6 +36,7 @@ class GenreViewSet(ReadOnlyModelViewSet):
 class AlbumViewSet(ReadOnlyModelViewSet):
     queryset = Album.objects.prefetch_related('songs')
     serializer_class = AlbumSerializer
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         """Get all albums from selected artist"""
@@ -56,15 +47,18 @@ class AlbumViewSet(ReadOnlyModelViewSet):
             queryset = queryset.filter(artist_id=artist_id)
 
         return queryset
-    
-    def perform_create(self, serializer):
-        """Save the owner atribute when creating an album."""
-        serializer.save(owner=self.request.user)
 
 
 class SongViewSet(ReadOnlyModelViewSet):
     queryset = Song.objects.all()
     serializer_class = SongSerializer
+    permission_classes = [AllowAny]
+
+    @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated], url_path="audio")
+    def audio(self, request, pk=None):
+        """Get song audio file by id and stream it to user"""
+        song = self.get_object()
+        return FileResponse(song.file.open("rb"), as_attachment=False)
 
     def get_queryset(self):
         """Get all songs from selected album"""
@@ -76,6 +70,3 @@ class SongViewSet(ReadOnlyModelViewSet):
 
         return queryset
     
-    def perform_create(self, serializer):
-        """Save the owner atribute when creating a song."""
-        serializer.save(owner=self.request.user)

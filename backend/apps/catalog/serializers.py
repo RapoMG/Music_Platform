@@ -1,6 +1,8 @@
 from apps.catalog.models import Album, Artist, Song, Genre
 from rest_framework import serializers
 from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.reverse import reverse
+
 
 # Move to custompermissions.py ?
 class IsOwnerOrReadOnly(BasePermission):
@@ -30,10 +32,19 @@ class ArtistSerializer(serializers.ModelSerializer):
 class SongSerializer(serializers.ModelSerializer):
     #album = AlbumSerializer(read_only=True)
     owner = serializers.ReadOnlyField(source='owner.username')
+    audio_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Song
-        fields = ['id','title', 'file', 'length', 'lyrics', 'author', 'track_no', 'album', 'owner']
+        fields = ['id','title', 'file', 'length', 'lyrics', 'author', 'track_no', 'album', 'owner', 'audio_url']
         read_only_fields = ['album']
+
+    def get_audio_url(self, obj):
+        """Get the audio URL for the song. Only available for authenticated users."""
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return None
+        return reverse("song-audio", kwargs={"pk": obj.pk}, request=request)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -44,7 +55,6 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class AlbumSerializer(serializers.ModelSerializer):
     artist = ArtistSerializer(read_only=True)
-    #songs = SongSerializer(many=True, read_only=True)
     genre = serializers.StringRelatedField(many=True)
     songs = SongSerializer(many=True, read_only=True)
 

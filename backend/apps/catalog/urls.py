@@ -1,5 +1,3 @@
-from django.urls import path
-
 from rest_framework.routers import DefaultRouter
 
 from apps.catalog.views import ArtistViewSet, AlbumViewSet, SongViewSet, GenreViewSet
@@ -17,4 +15,3 @@ router.register(r'genres', GenreViewSet, basename='genre')
 
 urlpatterns = router.urls
 
-urlpatterns += []

@@ -21,6 +21,7 @@ staticfiles/
 
 # Project
 notes/
+*temp*.*
 
 # Allowed examples
 !.env.example
