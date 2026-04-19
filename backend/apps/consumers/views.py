@@ -74,7 +74,7 @@ class AddAlbumToLibraryView(APIView):
             return Response({"message": "Album already in library"}, status=status.HTTP_400_BAD_REQUEST)
         
 
-class UserLibraryView(APIView):
+class UserLibraryView(ListAPIView):
     """Get a user's library."""
     serializer_class = LibraryItemSerializer
     permission_classes = [IsAuthenticated]  # only authenticated users
