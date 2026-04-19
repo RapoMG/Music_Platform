@@ -17,7 +17,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from apps.consumers.views import ConsumerProfileView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,8 +24,8 @@ urlpatterns = [
     path('api/auth/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.jwt')),
 
-    path('api/consumers/profile/<int:user_id>/', ConsumerProfileView.as_view()),
 
+    path('api/', include('apps.consumers.urls')),
     path('api/', include('apps.catalog.urls')),
 
 ]

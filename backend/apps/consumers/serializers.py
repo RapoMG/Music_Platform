@@ -3,7 +3,7 @@ from rest_framework import serializers
 from apps.users.models import User
 from apps.users.validators import validate_username_not_email
 
-from apps.consumers.models import ConsumerProfile, LibraryItem
+from apps.consumers.models import ConsumerProfile, LibraryItem, Playlist, PlaylistItem
 
 class ConsumerRegisterSerializer(serializers.ModelSerializer):
     """Serializer for consumer registration."""
@@ -54,3 +54,45 @@ class LibraryItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = LibraryItem
         fields = ('id', 'title', 'artist', 'album', 'file', 'length', 'added_at')
+
+
+class PlaylistItemSerializer(serializers.ModelSerializer):
+    """Serializer for playlist item with fields prepared for frontend APlayer."""
+    name = serializers.CharField(source='song.title')
+    artist = serializers.CharField(source='song.album.artist.name')
+    url = serializers.FileField(source='song.file')
+    lrc = serializers.CharField(source='song.lyrics', allow_blank=True, allow_null=True, required=False)
+    cover = serializers.FileField(source='song.album.cover', allow_null=True, required=False)
+    class Meta:
+        model = PlaylistItem
+        fields = ('name', 'artist', 'url', 'position', 'lrc', 'cover')
+
+
+class PlaylistSerializer(serializers.ModelSerializer):
+    """Serializer for playlist."""
+    songs_no = serializers.IntegerField(read_only=True, source='items.count')
+    class Meta:
+        model = Playlist
+        fields = ('id','name', 'is_public', 'songs_no')
+
+
+class PlaylistDetailsSerializer(serializers.ModelSerializer):
+    """Serializer for playlist details."""
+    items = PlaylistItemSerializer(many=True)
+    songs_no = serializers.IntegerField(read_only=True, source='items.count')
+    class Meta:
+        model = Playlist
+        fields = ('id','name', 'description', 'songs_no', 'created_at', 'updated_at',  'items')
+        
+
+class AddSongSerializer(serializers.Serializer):
+    """Serializer for adding a song to a playlist."""
+    song_id = serializers.IntegerField()
+
+class ReorderSongsSerializer(serializers.Serializer):
+    """Serializer for reordering a playlist item."""
+    position = serializers.IntegerField(min_value=1)
+
+class RemoveSongSerializer(serializers.Serializer):
+    """Serializer for removing a song from a playlist."""
+    song_id = serializers.IntegerField()
