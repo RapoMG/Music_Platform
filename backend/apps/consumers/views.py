@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from apps.consumers.serializers import (
     ConsumerProfileSerializer, LibraryItemSerializer,
     PlaylistSerializer, PlaylistDetailsSerializer, PlaylistItemSerializer,
-    AddSongSerializer, RemoveSongSerializer, ReorderSongsSerializer)
+    AddSongSerializer, ReorderSongsSerializer)
 
 from apps.consumers.models import ConsumerProfile, LibraryItem, Playlist
 from apps.catalog.models import Song, Album
@@ -107,7 +107,7 @@ class PublicPlaylistDetailView(RetrieveAPIView):
     #queryset = Playlist.objects.filter(is_public=True).prefetch_related('items__song__album__artist')
 
     def get_object(self):
-        playlist =  get_object_or_404(Playlist, playlist_id = self.kwargs['pk'])
+        playlist =  get_object_or_404(Playlist, pk = self.kwargs['pk'])
         
         # Check if the playlist is public or if the user is the owner
         if playlist.is_public or playlist.user == self.request.user:
@@ -123,10 +123,26 @@ class PlaylistViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self) -> Playlist:
+        """Get the user's playlists."""
         return Playlist.objects.filter(user=self.request.user)
     
     def perform_create(self, serializer):
+        """Create a new playlist."""
         serializer.save(user=self.request.user)
+    
+    @action(detail=True, methods=['get'], url_path='player')
+    def player(self, request, pk=None) -> Response:
+        """Get a playlist's items for APlayer."""
+        
+        # playlist = Playlist.objects.get(pk=pk, user=request.user)  # Get the user's playlist by ID
+        playlist = self.get_object()  # already scoped by get_queryset(user=request.user)
+
+        # items = playlist.items.all().select_related('song__album', 'song__album__artist')
+        items = playlist.items.select_related('song__album__artist')
+
+        serializer = PlaylistItemSerializer(items, many=True)
+        
+        return Response(serializer.data)
 
 
 ##  Playlist operations
@@ -150,8 +166,6 @@ class PlaylistItemViewSet(GenericViewSet):
         """Get the serializer class based on the action."""
         if self.action == 'add_song':
             return AddSongSerializer
-        elif self.action == 'remove_song':
-            return RemoveSongSerializer
         elif self.action == 'reorder_songs':
             return ReorderSongsSerializer
         return None
@@ -176,26 +190,21 @@ class PlaylistItemViewSet(GenericViewSet):
         return Response({"message": "Song added to playlist"}, status=status.HTTP_201_CREATED)
     
     @action(detail=False, methods=['delete'], url_path='remove-song')
-    def remove_song(self, request, playlist_id=None) -> Response:
+    def remove_song(self, request, playlist_id=None, item_id=None) -> Response:
         """Remove a song from a playlist."""
-
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        song_id = serializer.validated_data.get('song_id')
 
         playlist = self.get_playlist(request, playlist_id)
         
 
         try:
-            remove_song_from_playlist(request.user, song_id, playlist)
+            remove_song_from_playlist(request.user, item_id, playlist)
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         return Response({"message": "Song removed from playlist"}, status=status.HTTP_200_OK)
     
     @action(detail=False, methods=['patch'], url_path='move-song')
-    def reorder_songs(self, request, song_id=None, playlist_id=None) -> Response:
+    def reorder_songs(self, request, item_id=None, playlist_id=None) -> Response:
         """Move a song in a playlist."""
 
         serializer = self.get_serializer(data=request.data)
@@ -204,24 +213,14 @@ class PlaylistItemViewSet(GenericViewSet):
         new_position = serializer.validated_data.get('position')
 
         try:
-            move_song_in_playlist(request.user, song_id, playlist_id, new_position)
+            move_song_in_playlist(request.user, item_id, playlist_id, new_position)
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         return Response({"message": "Song moved in playlist"}, status=status.HTTP_200_OK)
 
-# APlayer
 
-class PlaylistPlayerView(APIView):
-    """Get an owner's playlist's items for APlayer."""
-    
-    permission_classes = [IsAuthenticated]  # only with authenticated users
-
-    def get(self, request, playlist_id) -> Response:
-        
-        playlist = Playlist.objects.get(id=playlist_id, user=request.user)  # Get the user's playlist by ID
-        
-        items = playlist.items.all().select_related('song__album', 'song__album__artist')
-
-        serializer = PlaylistItemSerializer(items, many=True)
-        return Response(serializer.data)
+# Aplayer test page view
+from django.shortcuts import render
+def player_page(request):
+    return render(request, 'player/player.html')

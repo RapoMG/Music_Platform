@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/aplayer/dist/APlayer.min.css">
+</head>
+<body>
+
+<div id="player"></div>
+
+<script src="https://unpkg.com/aplayer/dist/APlayer.min.js"></script>
+
+<script>
+fetch('/api/me/playlists/1/player/', {
+  credentials: 'include'
+})
+  .then(res => {
+    console.log('STATUS:', res.status);
+
+    if (!res.ok) {
+      return res.json().then(err => {
+        throw new Error(`HTTP ${res.status}: ${JSON.stringify(err)}`);
+      });
+    }
+
+    return res.json();
+  })
+  .then(data => {
+    console.log('DATA:', data);
+
+    new APlayer({
+      container: document.getElementById('player'),
+      audio: data
+    });
+  })
+  .catch(err => {
+    console.error(err);
+
+    document.getElementById('player').innerHTML =
+      '<p>No playlist available</p>';
+  });
+</script>
+
+</body>
+</html>
+
+<!--
+<script>
+fetch('/api/me/playlists/1/player/', { credentials: 'include' })
+  .then(async (res) => {
+    console.log('STATUS:', res.status);
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
+    }
+    return res.json();
+  })
+  .then(data => {
+    console.log('DATA:', data);
+
+    new APlayer({
+      container: document.getElementById('player'),
+      audio: data
+    });
+  })
+  .catch(err => console.error(err));
+</script>
+-->
