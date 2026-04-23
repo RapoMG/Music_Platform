@@ -1,4 +1,8 @@
 from django.db import transaction, models
+from django.db.models import Count
+from django.utils import timezone
+from datetime import timedelta
+
 from apps.catalog.models import Song, Album
 from apps.consumers.models import LibraryItem, PlaylistItem, Playlist
 
@@ -113,4 +117,55 @@ def move_song_in_playlist(user, item_id: int, playlist_id: int, new_position: in
 
     return item
     
-    
+
+# Global services
+
+def get_latest_library_items(limit=12):
+    """Return the latest songs added to libraries across users."""
+    return (
+        LibraryItem.objects
+        .select_related('song', 'song__album', 'song__album__artist')
+        .order_by('-added_at')[:limit]
+    )
+
+
+def get_latest_library_item():
+    """Backward-compatible helper used by older code paths."""
+    return get_latest_library_items(limit=1).first()
+
+
+def get_most_popular_albums(limit=8, days=30):
+    """Return albums with the highest number of library additions in a time window."""
+    since = timezone.now() - timedelta(days=days)
+    return (
+        Album.objects
+        .filter(songs__owned_by__added_at__gte=since)
+        .select_related('artist')
+        .annotate(popularity=Count('songs__owned_by'))
+        .order_by('-popularity', '-id')[:limit]
+    )
+
+
+def get_newest_albums(limit=5):
+    """Return the newest albums in the database."""
+    return Album.objects.select_related('artist').order_by('-id')[:limit]
+
+
+def get_trending_songs(limit=5, days=7, hours=0):
+    """
+    Returns most added songs in a time window.
+    """
+    since = timezone.now() - timedelta(days=days, hours=hours)
+
+    return (
+        LibraryItem.objects
+        .filter(added_at__gte=since)
+        .values(
+            'song',
+            'song__title',
+            'song__album__title',
+            'song__album__artist__name'
+        )
+        .annotate(add_count=Count('id'))
+        .order_by('-add_count')[:limit]
+    )

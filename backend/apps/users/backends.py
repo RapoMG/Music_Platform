@@ -24,6 +24,9 @@ class UsernameOrEmailAccountTypeBackend(ModelBackend):
 
         if account_type and user.account_type != account_type:
             return None
+        
+        if not self.user_can_authenticate(user):
+            return None
 
         if user and user.check_password(password):
             return user

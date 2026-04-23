@@ -25,8 +25,10 @@ urlpatterns = [
     path('api/auth/', include('djoser.urls.jwt')),
 
 
-    path('api/', include('apps.consumers.urls')),
+    path('api/', include('apps.consumers.urls', namespace='apps.consumers_api')),
     path('api/', include('apps.catalog.urls')),
+
+    path('', include('apps.consumers.web_urls', namespace='apps.consumers_web')),
 
 ]
 from django.conf import settings

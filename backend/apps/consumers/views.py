@@ -21,6 +21,8 @@ from apps.consumers.services import (
     add_to_library, add_album_to_library,
     add_song_to_playlist, remove_song_from_playlist, move_song_in_playlist)
 
+from apps.consumers.services import get_trending_songs
+
 User = get_user_model()
 
 # Create your views here.
@@ -224,3 +226,25 @@ class PlaylistItemViewSet(GenericViewSet):
 from django.shortcuts import render
 def player_page(request):
     return render(request, 'player/player.html')
+
+
+# Utilities
+
+class TrendingSongsView(APIView):
+    """
+    Get the top 5 trending songs based on how many times
+    they were added to libraries in the last 7 days.
+    Based on the LibraryItem model by get_trending_songs() service.
+    """
+    def get(self, request):
+        songs = get_trending_songs()
+
+        return Response([
+            {
+                "song": s["song__title"],
+                "artist": s["song__album__artist__name"],
+                "album": s["song__album__title"],
+                "count": s["add_count"],
+            }
+            for s in songs
+        ])

@@ -32,6 +32,9 @@ class LibraryItem(models.Model):
     class Meta:
         unique_together = ('user', 'song')
         ordering = ['-added_at']
+        indexes = [
+            models.Index(fields=['-added_at']), # index on added_at for faster retrieval of latest library items
+        ]
 
     def __str__(self):
         return f"{self.user} owns {self.song}"
