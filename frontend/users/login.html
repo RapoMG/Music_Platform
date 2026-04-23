@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}OpenChord - Login / Register{% endblock %}
+
+{% block content %}
+<section class="content-section" aria-labelledby="login-title">
+    <div class="section-header">
+        <h2 id="login-title">Login</h2>
+        <h3>Soundtrack your day</h3>
+    </div>
+    <div>
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="panel">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            {{ form.as_p }}
+
+            <div class="navbar-bottom-row">
+                <a href= "{% url 'apps.consumers_web:login' %}?next={% url 'apps.consumers_web:home' %}" onclick="event.preventDefault(); this.closest('form').submit();">Login </a>
+            </div>
+        </form>
+    </div>
+</section>
+
+<section class="content-section" aria-labelledby="register-title">
+    <div class="section-header">
+        <h2 id="register-title">Register</h2>
+        <h3>Call the tune</h3>
+    </div>
+
+    <div>
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="panel">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            {{ form.as_p }}
+
+            
+            <div class="navbar-bottom-row">
+                <a href= "{% url 'apps.consumers_web:register' %}?next={% url 'apps.consumers_web:home' %}" onclick="event.preventDefault(); this.closest('form').submit();">Register</a>
+            </div>
+        </form>
+    </div>
+
+</section>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}OpenChord - Home{% endblock %}
+
+{% block content %}
+
+<!-- Latest Library Additions Section -->
+<section class="content-section">
+    <div class="section-header">
+        <h1>Latest Library Additions</h1>
+        <p>Based on `get_latest_library_items()` service.</p>
+    </div>
+    <div class="media-grid">
+        {% for item in latest_library_items %}
+            <article class="media-card">
+                <span class="meta">{{ item.song.album.artist.name }}</span>
+                <img src="{{ item.song.album.cover.url }}" alt="{{ item.song.album.title }}">
+                <strong>{{ item.song.title }}</strong>
+            </article>
+        {% empty %}
+            <p class="muted">No library items yet.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Most Popular Albums Section -->
+<section class="content-section">
+    <div class="section-header">
+        <h2>Most Popular Albums (30 days)</h2>
+        <p>Calculated from library adds in the last 30 days.</p>
+    </div>
+    <div class="media-grid">
+        {% for album in popular_albums %}
+            <article class="media-card">
+                <span class="meta">{{ album.artist.name }}</span>
+                <img src="{{ album.cover.url }}" alt="{{ album.title }}">
+                <strong>{{ album.title }}</strong>
+            </article>
+        {% empty %}
+            <p class="muted">No popularity data yet.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Newest Articles Section -->
+<section class="content-section">
+    <div class="section-header">
+        <h2>Newest Articles</h2>
+        <p>Placeholder for upcoming service news.</p>
+    </div>
+    <div class="placeholder-box">
+        <p>Articles are not implemented yet.</p>
+        <p>Endpoint to create: <code>GET /api/articles/</code> and article detail endpoint.</p>
+    </div>
+</section>
+
+<!-- Newest Albums Section -->
+<section class="content-section">
+    <div class="section-header">
+        <h2>5 Newest Albums</h2>
+        <p>Newest records currently in the database.</p>
+    </div>
+    <div class="media-grid">
+        {% for album in newest_albums %}
+            <article class="media-card">
+                <strong class="meta">{{ album.artist.name }}</strong>
+                <img src="{{ album.cover.url }}" alt="{{ album.title }}">
+                <strong>{{ album.title }}</strong>
+            </article>
+        {% empty %}
+            <p class="muted">No albums in catalog yet.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}OpenChord - Artists{% endblock %}
+
+{% block content %}
+
+<section class="content-section">
+    <div class="section-header">
+        <h1>Artists</h1>
+    </div>
+    <div class="media-grid">
+        {% for artist in artists %}
+            
+            <article class="media-card">
+                <a  href="{% url 'apps.consumers_web:artist_detail' artist.id %}" class="link-pill">
+                <strong>{{ artist.name }}</strong>
+                </a>
+                
+                
+                {% if artist.last_album %}              
+                    <a  href="{% url 'apps.consumers_web:artist_detail' artist.id %}" >
+                        <img src="{{ artist.last_album.cover.url }}" alt="{{ artist.last_album.name }}">
+                    </a>
+                    <p>{{ artist.last_album.title }}({{ artist.last_album.release_date|date:"Y" }})</p>
+                {% else %}
+
+                    {% if artist.image %}
+                        <a  href="{% url 'apps.consumers_web:artist_detail' artist.id %}"></a>
+                            <img src="{{ artist.image.url }}" alt="{{ artist.name }}">
+                        </a>
+                    {% else %}
+                        <img src="{% static 'images/logo_avatar.svg' %}" alt="{{ artist.name }}" >
+                    {% endif %}
+                {% endif %}
+            </article>
+        
+        {% empty %}
+            <p class="muted">No albums in catalog yet.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

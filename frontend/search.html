@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}OpenChord - Search{% endblock %}
+
+{% block content %}
+<section class="content-section">
+    <div class="section-header">
+        <h1>Search results</h1>
+        <p>Query: <strong>{{ query|default:"-" }}</strong></p>
+    </div>
+
+    <h2>Artists</h2>
+    <div class="simple-list">
+        {% for artist in artists_results %}
+            <article class="list-row"><strong>{{ artist.name }}</strong></article>
+        {% empty %}
+            <p class="muted">No artists found.</p>
+        {% endfor %}
+    </div>
+
+    <h2>Albums</h2>
+    <div class="simple-list">
+        {% for album in albums_results %}
+            <article class="list-row"><strong>{{ album.title }}</strong><span>{{ album.artist.name }}</span></article>
+        {% empty %}
+            <p class="muted">No albums found.</p>
+        {% endfor %}
+    </div>
+
+    <h2>Songs</h2>
+    <div class="simple-list">
+        {% for song in songs_results %}
+            <article class="list-row"><strong>{{ song.title }}</strong><span>{{ song.album.artist.name }}</span></article>
+        {% empty %}
+            <p class="muted">No songs found.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

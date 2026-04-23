@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}OpenChord - Genres{% endblock %}
+
+{% block content %}
+<section class="content-section">
+    <div class="section-header">
+        <h1>Genres</h1>
+        <p>Choose a genre to browse related albums and artists.</p>
+    </div>
+    <div class="simple-list">
+        {% for genre in genres %}
+            <article class="list-row">
+                <strong>{{ genre.name }}</strong>
+                <a href="/api/genres/{{ genre.id }}/">Genre API</a>
+            </article>
+        {% empty %}
+            <p class="muted">No genres in database.</p>
+        {% endfor %}
+    </div>
+    <div class="placeholder-box">
+        <p>Recommended endpoint to create for this page:</p>
+        <p><code>GET /api/genres/{id}/artists/</code> (or <code>/api/albums/?genre={id}</code>)</p>
+    </div>
+</section>
+{% endblock %}

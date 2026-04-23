@@ -1,0 +1,78 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}OpenChord{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/openchord.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/aplayer/dist/APlayer.min.css">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="app-shell">
+    <header class="top-navbar">
+        <div class="navbar-top-row">
+            <div class="navbar-left">
+                <a class="brand" href="{% url 'apps.consumers_web:home' %}">
+                    <img src="{% static 'images/logo_openchord.svg' %}" alt="OpenChord">
+                    <!-- <span>OpenChord</span> -->
+                </a>
+                <form class="search-form" action="{% url 'apps.consumers_web:search' %}" method="get">
+                    <input name="q" type="search" placeholder="Search artists, albums, songs" value="{{ request.GET.q|default:'' }}">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+            <div class="navbar-center">
+                {% if request.user.is_authenticated and request.user.consumerprofile.avatar %}
+                    <img class="user-avatar" src="{{ request.user.consumerprofile.avatar.url }}" alt="{{ request.user.username }}">
+                {% else %}
+                    <img class="user-avatar" src="{% static 'images/logo_avatar.svg' %}" alt="Default avatar">
+                {% endif %}
+            </div>
+            <div class="navbar-right">
+                <span class="label">Loaded playlist</span>
+                <strong id="currently-loaded-playlist">None selected</strong>
+            </div>
+        </div>
+        <nav class="navbar-bottom-row" aria-label="Main navigation">
+            <a href="{% url 'apps.consumers_web:home' %}" class="{% if request.path == '/' %}active{% endif %}">Home</a>
+            <a href="{% url 'apps.consumers_web:artists' %}" class="{% if '/artists/' in request.path %}active{% endif %}">Artists</a>
+            <a href="{% url 'apps.consumers_web:genres' %}" class="{% if '/genres/' in request.path %}active{% endif %}">Genres</a>
+            <a href="{% url 'apps.consumers_web:articles' %}" class="{% if '/articles/' in request.path %}active{% endif %}">Articles</a>
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'apps.consumers_web:profile' request.user.username %}" class="{% if '/profile/' in request.path %}active{% endif %}">Profile</a>
+            {% else %}
+                <a href="{% url 'apps.consumers_web:login' %}?next={% url 'apps.consumers_web:home' %}">Login</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <aside class="playlists-bar">
+        <h2>Your playlists</h2>
+        <div id="playlists-list" class="playlists-list">
+            <p class="muted">Sign in to load your playlists.</p>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bottom-player">
+        <div id="aplayer0"></div>
+    </footer>
+</div>
+
+<script src="https://unpkg.com/aplayer/dist/APlayer.min.js"></script>
+<script>
+    window.OPENCHORD_ASSETS = {
+        playlistPlaceholder: "{% static 'images/logo_avatar.svg' %}"
+    };
+    /* That shows error in the code, but it should look like this, and is better for js */
+    window.OPENCHORD_USER_IS_AUTHENTICATED = {% if request.user.is_authenticated %}true{% else %}false{% endif %};
+</script>
+<script src="{% static 'js/openchord-player.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
