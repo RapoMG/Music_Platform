@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}OpenChord - {{ artist.name }} {% endblock %}
+
+{% block content %}
+
+<section class="content-section artist-details-section">
+    <div class="section-header artist-details-header">
+        <h1>{{ artist.name }}</h1>
+    </div>
+
+    <div class="artist-details-layout">
+        <div class="artist-info">
+            <p>{{ artist.description }}</p>
+        </div>
+
+        <div class="artist-side">
+            <div class="artist-picture atist-picture">
+                {% if artist.image %}
+                    <img src="{{ artist.image.url }}" alt="{{ artist.name }}">
+                {% else %}
+                    <img src="{% static 'images/logo_artist.svg' %}" alt="{{ artist.name }}">
+                {% endif %}
+            </div>
+
+            <div class="artist-genres">
+                {% for genre in genres %}
+                    <span class="artist-genre-pill">{{ genre.name }}</span>
+                {% empty %}
+                    <span class="artist-genre-empty">There's to many great sounds to label them just yet</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="section-header">
+        <h2>Dive in that sounds</h2>
+    </br>
+    </div>
+
+    {% if albums|length == 0 %}
+        <p class="muted" style="text-align: center;">Notes become sounds, sounds become songs.
+        <br> Soon there will be albums to explore.</p>
+    {% endif %}
+
+    <div class="media-grid">
+        {% for album in albums %}
+            
+            <article class="media-card">
+                
+                <strong>{{ album.title }}</strong>
+                
+                <a  href="{% url 'apps.consumers_web:album_details' album.id %}" >
+                {% if album.cover %}              
+                    
+                        <img src="{{ album.cover.url }}" alt="{{ album.title }}">
+                    
+                {% else %}
+                        <img src="{% static 'images/logo_avatar.svg' %}" alt="{{ album.title }}" >
+                        
+                {% endif %}
+                </a>
+                {{ album.release_date|date:"F Y" }}
+            </article>
+        
+        {% empty %}
+    
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

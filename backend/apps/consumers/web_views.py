@@ -197,15 +197,23 @@ class ArtistListPageView(TemplateView):
 
 class ArtistDetailPageView(TemplateView):
     """Artist detail page view. Displays details of a single artist and their albums."""
-    template_name = "artist_detail.html"
+    template_name = "artist_details.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         artist_id = self.kwargs.get('artist_id')
         artist = get_object_or_404(Artist, id=artist_id)
+       
+        albums = Album.objects.filter(artist=artist, published=True).order_by("-release_date", "-id").all()
         
+        # Get all genres associated with the artist's albums in a single query
+        genres = Genre.objects.filter(genres__in=albums).distinct()  # distinct to avoid duplicates when an artist has multiple albums in the same genre
+
+
         context["artist"] = artist
+        context["albums"] = albums
+        context["genres"] = genres
         return context
 
 
