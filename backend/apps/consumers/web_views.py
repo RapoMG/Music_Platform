@@ -1,10 +1,12 @@
+from datetime import timedelta
+
 from django.shortcuts import get_object_or_404, get_list_or_404, render, redirect
 from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model # ,authenticate
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 
 from django.views.generic import TemplateView
 
@@ -171,7 +173,7 @@ class ArtistListPageView(TemplateView):
     template_name = "artists.html"
 
     def get_context_data(self, **kwargs):
-        from django.db.models import Prefetch
+        
 
         context = super().get_context_data(**kwargs)
 
@@ -217,16 +219,63 @@ class GenreListPageView(TemplateView):
         return context
 
 
+class AlbumPageView(TemplateView):
+    """Album detail page view. Displays details of a single album and its songs."""
+    template_name = "album_details.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        album_id = self.kwargs.get('album_id')
+        album = get_object_or_404(Album, id=album_id, published=True)
+        songs = list(Song.objects.filter(album=album).order_by("track_no").all())
+
+        # sum of song lengths to get total album length
+        album_length = sum((song.length for song in songs), start=timedelta())
+        # format album length as H:MM:SS or MM:SS
+        album_length_display = format_duration(album_length)
+
+        for song in songs:
+            song.length_display = format_duration(song.length)
+
+        # Ready to check if the user has the album in their library
+        user_library_song_ids = set()
+        album_in_library = False
+
+        # Only check if the user is authenticated to avoid unnecessary database queries for anonymous users
+        if self.request.user.is_authenticated:
+            user_library_song_ids = set(
+                self.request.user.library_items.values_list("song_id", flat=True) # get all song ids in user's library as a set for fast lookup
+            )
+            album_song_ids = {song.id for song in songs}
+            album_in_library = bool(album_song_ids) and album_song_ids.issubset(user_library_song_ids)
+
+        context["album"] = album
+        context["songs"] = songs
+        context["user_library_song_ids"] = user_library_song_ids
+        context["album_in_library"] = album_in_library
+        context["album_length_display"] = album_length_display
+        return context
+    
+
 class ArticlesPlaceholderView(TemplateView):
     template_name = "articles.html"
     
+
 def search_view(request):
     """Search view.
-    Handles search queries for artists, albums, and songs."""
+    Handles search queries for artists, albums, songs
+    and users excluding:
+     - current user,
+     - inactive users,
+     - staff users.
+    """
+
     query = (request.GET.get('q') or "").strip()
     artists_res = Artist.objects.none()
     albums_res = Album.objects.none()
     songs_res = Song.objects.none()
+    users_res = User.objects.none()
 
     if query:
         artists_res = Artist.objects.filter(
@@ -238,12 +287,23 @@ def search_view(request):
         songs_res = Song.objects.filter(
             Q(title__icontains=query)
         )
+        users_res = User.objects.filter(
+            Q(username__icontains=query)
+            ).exclude(
+                id=request.user.id  # exclude the current user from search results
+            ).exclude(
+                is_active=False  # exclude inactive users from search results
+            ).exclude(
+                is_staff=True  # exclude staff users from search results
+            )
+        
     
     context = {
         'query':query,
         'artists_results': artists_res,
         'albums_results': albums_res,
-        'songs_results': songs_res
+        'songs_results': songs_res,
+        'users_results': users_res,
     }
 
     return render(request, 'search.html', context)

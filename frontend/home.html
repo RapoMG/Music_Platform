@@ -8,7 +8,7 @@
 <section class="content-section">
     <div class="section-header">
         <h1>Latest Library Additions</h1>
-        <p>Based on `get_latest_library_items()` service.</p>
+        <!--Based on `get_latest_library_items()` service.-->
     </div>
     <div class="media-grid">
         {% for item in latest_library_items %}
@@ -27,7 +27,7 @@
 <section class="content-section">
     <div class="section-header">
         <h2>Most Popular Albums (30 days)</h2>
-        <p>Calculated from library adds in the last 30 days.</p>
+        <!--Calculated from library adds in the last 30 days.-->
     </div>
     <div class="media-grid">
         {% for album in popular_albums %}
@@ -64,7 +64,9 @@
         {% for album in newest_albums %}
             <article class="media-card">
                 <strong class="meta">{{ album.artist.name }}</strong>
-                <img src="{{ album.cover.url }}" alt="{{ album.title }}">
+                <a  href="{% url 'apps.consumers_web:album_details' album.id %}" >
+                    <img src="{{ album.cover.url }}" alt="{{ album.title }}">
+                </a>
                 <strong>{{ album.title }}</strong>
             </article>
         {% empty %}

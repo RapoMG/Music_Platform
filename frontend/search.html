@@ -6,13 +6,15 @@
 <section class="content-section">
     <div class="section-header">
         <h1>Search results</h1>
-        <p>Query: <strong>{{ query|default:"-" }}</strong></p>
+        <p>for: '<strong>{{ query|default:"-" }}</strong>'</p>
     </div>
 
     <h2>Artists</h2>
     <div class="simple-list">
         {% for artist in artists_results %}
-            <article class="list-row"><strong>{{ artist.name }}</strong></article>
+            <a  href="{% url 'apps.consumers_web:artist_details' artist.id %}">
+                <article class="list-row"><strong>{{ artist.name }}</strong></article>
+            </a>
         {% empty %}
             <p class="muted">No artists found.</p>
         {% endfor %}
@@ -21,7 +23,13 @@
     <h2>Albums</h2>
     <div class="simple-list">
         {% for album in albums_results %}
-            <article class="list-row"><strong>{{ album.title }}</strong><span>{{ album.artist.name }}</span></article>
+            <a  href="{% url 'apps.consumers_web:album_details' album.id %}">
+                <article class="list-row"><strong>{{ album.title }}</strong>
+            </a>
+            by
+            <a  href="{% url 'apps.consumers_web:artist_details' album.artist.id %}">
+                <span>{{ album.artist.name }}</span></article>
+            </a>
         {% empty %}
             <p class="muted">No albums found.</p>
         {% endfor %}
@@ -30,9 +38,30 @@
     <h2>Songs</h2>
     <div class="simple-list">
         {% for song in songs_results %}
-            <article class="list-row"><strong>{{ song.title }}</strong><span>{{ song.album.artist.name }}</span></article>
+            <a  href="{% url 'apps.consumers_web:album_details' song.album.id %}">
+                <article class="list-row"><strong>{{ song.title }}</strong>
+            </a>
+                from album
+            <a  href="{% url 'apps.consumers_web:album_details' song.album.id %}">
+                <span>{{ song.album.title }}</span>
+            </a>
+                by
+            <a  href="{% url 'apps.consumers_web:artist_details' song.album.artist.id %}">
+                <span>{{ song.album.artist.name }}</span></article>
+            </a>
         {% empty %}
             <p class="muted">No songs found.</p>
+        {% endfor %}
+    </div>
+
+    <h2>Users</h2>
+    <div class="simple-list">
+        {% for user in users_results %}
+            <a  href="{% url 'apps.consumers_web:profile' user.username %}" >
+                <article class="list-row"><strong>{{ user.username }}</strong></article>
+            </a>
+        {% empty %}
+            <p class="muted">No users found.</p>
         {% endfor %}
     </div>
 </section>
