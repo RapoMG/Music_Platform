@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}OpenChord - {{ album.title }} {% endblock %}
+
+{% block content %}
+
+<section class="content-section artist-details-section">
+    <div class="section-header artist-details-header">
+        <h1>{{ album.title }}</h1>
+        <h2>{{ album.artist.name }}</h2>
+    </div>
+
+    <div class="artist-details-layout">
+        <div class="artist-info">
+            <div class="album">
+                <p><b>{{album.songs.all.count}}{% if album.songs.all.count == 1 %} track {% else %} tracks {% endif %}</b> ({{ album_length_display }})
+                </br><b>Released</b> {{ album.release_date|date:"j F Y" }}</p>
+                
+                <!-- Add whole album to library button -->
+                {% if request.user.is_authenticated %}
+                    {% if album_in_library %}
+                        <span class="owned-label artist-genre-pill">Album in library</span>
+                    {% else %}
+                        <button class="add-album-btn" data-album-id="{{ album.id }}">
+                            Add album to library
+                        </button>
+                    {% endif %}
+                {% endif %}
+
+                <hr>
+                <!-- Tracks -->
+                <dl> <strong>Tracks:</strong>
+                    {% for song in songs %}
+                        <dt>
+                            {{song.track_no}}. {{ song.title }}  ({{ song.length_display }})
+
+                            <!-- Check if the song is in the user's library -->
+                            {% if request.user.is_authenticated %}
+                                {% if song.id in user_library_song_ids %}
+                                    <span class="owned-label artist-genre-pill"> Track in library</span>
+                                {% else %}
+                                     <button class="add-song-btn" data-song-id="{{ song.id }}">
+                                        Add to library
+                                    </button>
+                                {% endif %}
+                            
+                            {% endif %}
+                            
+                        </dt>
+                    {% endfor %}
+                </dl>
+            </div>    
+        </div>
+
+        <div class="artist-side">
+            <div class="artist-picture atist-picture">
+                {% if album.cover %}
+                    <img src="{{ album.cover.url }}" alt="{{ album.title }}">
+                {% else %}
+                    <img src="{% static 'images/logo_artist.svg' %}" alt="{{ artist.name }}">
+                {% endif %}
+            </div>
+
+            <div class="artist-genres">
+                {% for genre in album.genre.all %}
+                    <span class="artist-genre-pill">{{ genre.name }}</span>
+                {% empty %}
+                    <span class="artist-genre-empty">There's to many great sounds to label them just yet</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="section-header">
+        <h2>Dive deeper with another album</h2>
+    </br>
+    </div>
+
+    {% if albums|length == 0 %}
+        <p class="muted" style="text-align: center;">Notes become sounds, sounds become new songs.
+        <br> Soon there will be more music to explore.</p>
+    {% endif %}
+
+    <div class="media-grid">
+        <!--Add query to view to get albums with skip on current one-->
+        {% for album in album.artist.album.all %}
+            
+            <article class="media-card">
+                
+                <strong>{{ album.title }}</strong>
+                
+                <a  href="{% url 'apps.consumers_web:album_details' album.id %}" >
+                {% if album.cover %}              
+                    
+                        <img src="{{ album.cover.url }}" alt="{{ album.title }}">
+                    
+                {% else %}
+                        <img src="{% static 'images/logo_avatar.svg' %}" alt="{{ album.title }}" >
+                        
+                {% endif %}
+                </a>
+                {{ album.release_date|date:"F Y" }}
+            </article>
+        
+        {% empty %}
+            
+        {% endfor %}
+        
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/album_details.js' %}"></script>
+{% endblock %}

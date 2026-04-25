@@ -22,9 +22,26 @@ from django.contrib.auth.forms import PasswordChangeForm
 from apps.catalog.models import Artist, Album, Song, Genre
 from apps.consumers.models import Playlist
 
+
+
 User = get_user_model()
 
 # Create your views here.
+
+
+def format_duration(duration: timedelta) -> str:
+    """
+    Format timedelta as:
+    - MM:SS when hours == 0
+    - H:MM:SS when hours > 0
+    """
+    total_seconds = int(duration.total_seconds())
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    if hours:
+        return f"{hours}:{minutes:02}:{seconds:02}"
+    return f"{minutes}:{seconds:02}"
 
 # User views
 

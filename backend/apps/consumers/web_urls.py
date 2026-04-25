@@ -2,7 +2,8 @@ from django.urls import path
 
 from apps.consumers.web_views import (
     HomePageView, search_view,
-    ArtistListPageView, ArtistDetailPageView, GenreListPageView, ArticlesPlaceholderView,
+    ArtistListPageView, ArtistDetailPageView, AlbumPageView,
+    GenreListPageView, ArticlesPlaceholderView,
     register, user_login, user_logout, profile_view, profile_edit
 )
 
