@@ -6,7 +6,7 @@
 
 <!-- Profile section -->
 <section class="content-section" aria-labelledby="profile-title">
-  <h2 id="profile-title">Profil: {{ profile_user.username }}</h2>
+  <h1 id="profile-title">Profile: {{ profile_user.username }}</h1>
 
   {% if profile_user.consumerprofile.avatar %}
     <p><img src="{{ profile_user.consumerprofile.avatar.url }}" alt="Avatar" style="max-width: 160px; height: auto;"></p>
@@ -27,6 +27,14 @@
 
   {% if request.user == profile_user %}
     <nav class="navbar-bottom-row" aria-label="Edit profile navigation">
+        <div>
+            <a href="{% url 'apps.consumers_web:profile_edit' %}">Create playlist</a> <!-- Placeholder for future playlist creation page/ fake link to keep layout with form -->
+        </div>
+
+        <!-- Temporary placeholder divs to maintain layout -->
+        <div></div>
+        <div></div>
+
         <div> <!-- Placeholder for future profile editing page/ fake div to keep layout with form -->
             <a href="{% url 'apps.consumers_web:profile_edit' %}">Edit profile</a>
         </div>
@@ -42,16 +50,53 @@
 <!-- User collection section -->
 {% if request.user == profile_user %}
     <section class="content-section" aria-labelledby="collection-title">
-        <nav class="navbar-bottom-row" aria-label="Edit profile navigation">
-                <a href="{% url 'apps.consumers_web:profile_edit' %}">Add playlist</a>
-        </nav>
-        <h2 id="collection-title">Collection</h2>
-        <p>Placeholder for user collection form.</p>
-        <p>Endpoint to create: <code>GET/POST /api/profile/collection/</code></p>
+    
+        <h1 >Your collection</h1>
+        {% for artist, albums in artist_groups.items %}
+            <h3>{{ artist.name }}</h3>
+            <div>
+                {% for album, songs in albums.items %}
+                <article>
+                    <p>{{ album.title }} <span>({{ album.release_date|date:"F Y" }})</span></p>
+                    <span class="meta">{{ album.release_date|date:"F Y" }}</span>
+                    <img src="{{ album.cover.url }}" alt="{{ album.title }} cover" style="max-width: 100px; height: auto;">
+                    {% for song in songs %}
+                        <br><strong>{{ song.title }}</strong>
+                    {% endfor %}
+                </article>
+                {% endfor %}
+            </div>
+        {% empty %}
+            <p class="muted">Here you will find your music collection.</p>
+        {% endfor %}
+
     </section>
 {% endif %}
 
-<!-- User playlists section -->
+<!-- backup code with class="media-card"
+ 
+<h2 id="collection-title">Your collection</h2>
+        {% for artist, albums in artist_groups.items %}
+            <h3>{{ artist.name }}</h3>
+            <div class="media-grid">
+                {% for album, songs in albums.items %}
+                <article class="media-card">
+                    <h4>{{ album.title }}</h4>
+                    <span class="meta">{{ album.release_date|date:"F Y" }}</span>
+                    <img src="{{ album.cover.url }}" alt="{{ album.title }} cover">
+                    {% for song in songs %}
+                        <strong>{{ song.title }}</strong>
+                    {% endfor %}
+                </article>
+                {% endfor %}
+            </div>
+        {% empty %}
+            <p class="muted">Here you will find your music collection.</p>
+        {% endfor %}
+
+-->
+
+<!-- User's public playlists section -->
 {% if request.user != profile_user %}
     <section class="content-section" aria-labelledby="playlists-title">
     <h2 id="playlists-title">Playlists created by {{ profile_user.username }}</h2>

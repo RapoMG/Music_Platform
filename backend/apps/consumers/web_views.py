@@ -1,4 +1,5 @@
 from datetime import timedelta
+from collections import defaultdict
 
 from django.shortcuts import get_object_or_404, get_list_or_404, render, redirect
 from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model # ,authenticate
@@ -128,10 +129,33 @@ def profile_view(request, username):
     
     # users playlists that are public
     playlists = profile_user.playlists.filter(is_public=True)
+    library = profile_user.library_items.prefetch_related(
+        'song__album__artist'    # prefetch songs and albums in library with their artists to avoid N+1 queries
+        ).order_by(
+            "song__album__artist__name",  # order library items by artist name, then album release date, then song track number
+            "song__album__release_date",
+            "song__track_no",
+            "song__id", # to ensure consistent ordering of songs with same track number in the same album, if there are any
+        )
+
+    #albums_groups = defaultdict(list)
+    artist_groups_dd = defaultdict(lambda: defaultdict(list))
+    
+
+    # Group library items by album and artist for display in template
+    for item in library:
+        #albums_groups[item.song.album].append(item.song)
+        artist_groups_dd[item.song.album.artist][item.song.album].append(item.song)
+
+    # Convert defaultdict to regular dict for template context
+    artist_groups = {artist: dict(albums) for artist, albums in artist_groups_dd.items()}
         
     context = {
         'profile_user': profile_user,
         'playlists': playlists,
+        'library': library,
+        #'albums_groups': albums_groups,
+        'artist_groups': artist_groups,
     }
     return render(request, 'users/profile.html', context)
 
