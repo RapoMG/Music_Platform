@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "consumers/layout/base.html" %}
 
 {% block title %}OpenChord - Login / Register{% endblock %}
 
@@ -9,19 +9,19 @@
         <h3>Soundtrack your day</h3>
     </div>
     <div>
-        <form method="post">
+        <form method="post" action="{% url 'apps.consumers_web:login' %}?next={% url 'apps.consumers_web:home' %}">
             {% csrf_token %}
 
-            {% if form.non_field_errors %}
+            {% if login_form.non_field_errors %}
             <div class="panel">
-                {{ form.non_field_errors }}
+                {{ login_form.non_field_errors }}
             </div>
             {% endif %}
 
-            {{ form.as_p }}
+            {{ login_form.as_p }}
 
             <div class="navbar-bottom-row">
-                <a href= "{% url 'apps.consumers_web:login' %}?next={% url 'apps.consumers_web:home' %}" onclick="event.preventDefault(); this.closest('form').submit();">Login </a>
+                <button type="submit">Login</button>
             </div>
         </form>
     </div>
@@ -34,20 +34,20 @@
     </div>
 
     <div>
-        <form method="post">
+        <form method="post" action="{% url 'apps.consumers_web:register' %}?next={% url 'apps.consumers_web:home' %}">
             {% csrf_token %}
 
-            {% if form.non_field_errors %}
+            {% if register_form.non_field_errors %}
             <div class="panel">
-                {{ form.non_field_errors }}
+                {{ register_form.non_field_errors }}
             </div>
             {% endif %}
 
-            {{ form.as_p }}
+            {{ register_form.as_p }}
 
             
             <div class="navbar-bottom-row">
-                <a href= "{% url 'apps.consumers_web:register' %}?next={% url 'apps.consumers_web:home' %}" onclick="event.preventDefault(); this.closest('form').submit();">Register</a>
+                <button type="submit">Register</button>
             </div>
         </form>
     </div>

@@ -42,26 +42,3 @@ fetch('/api/me/playlists/1/player/', {
 
 </body>
 </html>
-
-<!--
-<script>
-fetch('/api/me/playlists/1/player/', { credentials: 'include' })
-  .then(async (res) => {
-    console.log('STATUS:', res.status);
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
-    }
-    return res.json();
-  })
-  .then(data => {
-    console.log('DATA:', data);
-
-    new APlayer({
-      container: document.getElementById('player'),
-      audio: data
-    });
-  })
-  .catch(err => console.error(err));
-</script>
--->

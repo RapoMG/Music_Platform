@@ -1,0 +1,20 @@
+<script>
+async function fetchTrending() {
+    const res = await fetch("/api/library/trending/");
+    const data = await res.json();
+
+    const container = document.getElementById("trending-list");
+
+    container.innerHTML = data.map(item => `
+        <div class="card">
+            <p><strong>${item.song}</strong></p>
+            <p>${item.artist} — ${item.album}</p>
+            <p>Added ${item.count} times</p>
+        </div>
+    `).join("");
+}
+
+// fetch less frequently (heavier query)
+fetchTrending();
+setInterval(fetchTrending, 15000);
+</script>

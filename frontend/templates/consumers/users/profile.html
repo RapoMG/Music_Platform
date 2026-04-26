@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "consumers/layout/base.html" %}
 {% load static %}
 
 {% block title %}OpenChord - Profile{% endblock %}
@@ -49,7 +49,7 @@
 </section>
 {% if request.user == profile_user %}
     <div id="new-playlist-form-container">
-        {% include "users/_new_playlist.html" %}
+        {% include "consumers/users/partials/_new_playlist.html" %}
 
     </div>
 {% endif %}

@@ -25,7 +25,6 @@ from apps.catalog.models import Artist, Album, Song, Genre
 from apps.consumers.models import Playlist
 
 
-
 User = get_user_model()
 
 # Create your views here.
@@ -44,6 +43,14 @@ def format_duration(duration: timedelta) -> str:
     if hours:
         return f"{hours}:{minutes:02}:{seconds:02}"
     return f"{minutes}:{seconds:02}"
+
+
+def auth_page_context(*, request, login_form=None, register_form=None):
+    """Build context for the shared login/register page."""
+    return {
+        "login_form": login_form or AuthenticationForm(request),
+        "register_form": register_form or CustomUserCreationForm(),
+    }
 
 # User views
 
@@ -67,8 +74,9 @@ def register(request):
                 return redirect(next_url)
 
             return redirect("/")  # fallback
-    
-    return render(request, 'users/register.html', {'form': form})
+
+    context = auth_page_context(request=request, register_form=form)
+    return render(request, "consumers/users/login.html", context)
 
 
 def user_login(request):
@@ -99,7 +107,8 @@ def user_login(request):
 
             return redirect("/")  # fallback
 
-    return render(request, 'users/login.html', {'form': form})
+    context = auth_page_context(request=request, login_form=form)
+    return render(request, "consumers/users/login.html", context)
 
 @require_POST
 def user_logout(request):
@@ -163,7 +172,7 @@ def profile_view(request, username):
         'temp_playlists': temp_playlists,
         'form': PlaylistForm(), # form for creating new playlist in profile page, can be used in modal or inline
     }
-    return render(request, 'users/profile.html', context)
+    return render(request, "consumers/users/profile.html", context)
 
 # User profile edit view
 @login_required
@@ -195,14 +204,14 @@ def profile_edit(request):
         'profile': profile,
     }
 
-    return render(request, 'users/profile_edit.html', context)
+    return render(request, "consumers/users/profile_edit.html", context)
 
 # Home page view
 
 class HomePageView(TemplateView):
     """Home page view. Displays latest library items, most popular albums, and newest albums."""
     
-    template_name = "home.html"
+    template_name = "consumers/pages/home.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -217,7 +226,7 @@ class HomePageView(TemplateView):
 class ArtistListPageView(TemplateView):
     """Artist list page view. Displays a list of all artists."""
 
-    template_name = "artists.html"
+    template_name = "consumers/music/artists.html"
 
     def get_context_data(self, **kwargs):
         
@@ -244,7 +253,7 @@ class ArtistListPageView(TemplateView):
 
 class ArtistDetailPageView(TemplateView):
     """Artist detail page view. Displays details of a single artist and their albums."""
-    template_name = "artist_details.html"
+    template_name = "consumers/music/artist_details.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -266,7 +275,7 @@ class ArtistDetailPageView(TemplateView):
 
 class GenreListPageView(TemplateView):
     """Genre list page view. Displays a list of all genres."""
-    template_name = "genres.html"
+    template_name = "consumers/music/genres.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -276,7 +285,7 @@ class GenreListPageView(TemplateView):
 
 class AlbumPageView(TemplateView):
     """Album detail page view. Displays details of a single album and its songs."""
-    template_name = "album_details.html"
+    template_name = "consumers/music/album_details.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -316,7 +325,7 @@ class AlbumPageView(TemplateView):
 class PlaylistCreateView(LoginRequiredMixin, CreateView):
     """Playlist creation page view. Displays a form to create a new playlist."""
 
-    template_name = "users/_new_playlist.html"
+    template_name = "consumers/users/partials/_new_playlist.html"
     model = Playlist
     form_class = PlaylistForm
 
@@ -335,7 +344,7 @@ class PlaylistCreateView(LoginRequiredMixin, CreateView):
     #     return context
 
 class ArticlesPlaceholderView(TemplateView):
-    template_name = "articles.html"
+    template_name = "consumers/articles/articles.html"
     
 
 def search_view(request):
@@ -382,4 +391,4 @@ def search_view(request):
         'users_results': users_res,
     }
 
-    return render(request, 'search.html', context)
+    return render(request, "consumers/pages/search.html", context)

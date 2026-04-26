@@ -1,0 +1,24 @@
+<script>
+let lastTimestamp = null;
+
+async function fetchLatest() {
+    const res = await fetch("/api/library/latest/");
+    const data = await res.json();
+
+    if (!data || !data.added_at) return;
+
+    if (data.added_at === lastTimestamp) return;
+    lastTimestamp = data.added_at;
+
+    document.getElementById("latest-item").innerHTML = `
+        <div class="card">
+            <p><strong>Song:</strong> ${data.song}</p>
+            <p><strong>Artist:</strong> ${data.artist}</p>
+            <p><strong>Album:</strong> ${data.album}</p>
+        </div>
+    `;
+}
+
+fetchLatest();
+setInterval(fetchLatest, 5000);
+</script>
