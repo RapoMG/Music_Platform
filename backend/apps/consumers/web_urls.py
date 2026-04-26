@@ -3,6 +3,7 @@ from django.urls import path
 from apps.consumers.web_views import (
     HomePageView, search_view,
     ArtistListPageView, ArtistDetailPageView, AlbumPageView,
+    PlaylistCreateView,
     GenreListPageView, ArticlesPlaceholderView,
     register, user_login, user_logout, profile_view, profile_edit
 )
@@ -16,6 +17,8 @@ urlpatterns = [
     path('logout/', user_logout, name='logout'),
     path('profile/<str:username>/', profile_view, name='profile'),
     path('profile/edit/', profile_edit, name='profile_edit'),
+
+    path('playlist/create/', PlaylistCreateView.as_view(), name='playlist-create'),
 
     path('', HomePageView.as_view(), name='home'),
 

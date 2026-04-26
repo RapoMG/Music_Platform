@@ -2,7 +2,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from django import forms
 
-from apps.consumers.models import ConsumerProfile
+from apps.consumers.models import ConsumerProfile, Playlist
 
 User = get_user_model()
 
@@ -27,3 +27,9 @@ class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['email']
+
+class PlaylistForm(forms.ModelForm):
+    class Meta:
+        model = Playlist
+        fields = ['name', 'is_public', 'description']
+        

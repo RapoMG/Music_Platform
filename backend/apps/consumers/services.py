@@ -33,14 +33,16 @@ def add_album_to_library(user, album: Album) -> list[LibraryItem]:
 
 ####### Playlist services #######
 
+@transaction.atomic
 def add_song_to_playlist(user, song: Song, playlist: Playlist) -> PlaylistItem:
     """Add a song to a playlist. Safely handles duplicate entries."""
 
     if not LibraryItem.objects.filter(user=user, song=song).exists():
         raise Exception("Song not in user library")
 
-    # Get the last position of the playlist (only value, not object)
-    last_position = PlaylistItem.objects.filter(playlist=playlist).aggregate(models.Max('position'))['position_max'] or 0
+    # Lock current playlist rows to avoid duplicate position assignment under concurrent requests.
+    items = PlaylistItem.objects.select_for_update().filter(playlist=playlist)
+    last_position = items.aggregate(max_position=models.Max('position'))['max_position'] or 0
     
     return PlaylistItem.objects.create(playlist=playlist, song=song, position=last_position + 1)
     
@@ -52,7 +54,7 @@ def remove_song_from_playlist(user, item_id: int, playlist: Playlist) -> None:
     items = PlaylistItem.objects.select_for_update().filter(playlist_id=playlist.id, playlist__user=user)
 
     # Get the last position of the playlist (only value, not object)
-    max_position = items.aggregate(models.Max('position'))['position_max'] or 0
+    max_position = items.aggregate(max_position=models.Max('position'))['max_position'] or 0
 
     try:
         item = items.get(id=item_id) # item that will be removed
@@ -88,7 +90,7 @@ def move_song_in_playlist(user, item_id: int, playlist_id: int, new_position: in
     if new_position == old_position:
         return item
 
-    max_position = items.aggregate(models.Max('position'))['position_max'] or 0
+    max_position = items.aggregate(max_position=models.Max('position'))['max_position'] or 0
 
     if new_position < 1 or new_position > max_position:
         raise Exception("Invalid position")

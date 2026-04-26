@@ -2,23 +2,24 @@ from datetime import timedelta
 from collections import defaultdict
 
 from django.shortcuts import get_object_or_404, get_list_or_404, render, redirect
-from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model # ,authenticate
+from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+from django.urls import reverse
+from django.views.generic import TemplateView, CreateView
 from django.views.decorators.http import require_POST
-from django.contrib.auth.forms import AuthenticationForm
+
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.db.models import Q, Prefetch
 
-from django.views.generic import TemplateView
-
-from apps.consumers.forms import CustomUserCreationForm, ProfileForm, UserUpdateForm
+from apps.consumers.forms import  CustomUserCreationForm, UserUpdateForm, ProfileForm, PlaylistForm
 from apps.consumers.services import (
     get_latest_library_items,
     get_most_popular_albums,
     get_newest_albums,
 )
-
-from django.contrib.auth.forms import PasswordChangeForm
 
 from apps.catalog.models import Artist, Album, Song, Genre
 from apps.consumers.models import Playlist
@@ -150,12 +151,17 @@ def profile_view(request, username):
     # Convert defaultdict to regular dict for template context
     artist_groups = {artist: dict(albums) for artist, albums in artist_groups_dd.items()}
         
+
+    temp_playlists = profile_user.playlists.prefetch_related('items__song__album__artist') # for testing playlist display in profile page, to be replaced with public playlists when we have them
+
     context = {
         'profile_user': profile_user,
         'playlists': playlists,
         'library': library,
         #'albums_groups': albums_groups,
         'artist_groups': artist_groups,
+        'temp_playlists': temp_playlists,
+        'form': PlaylistForm(), # form for creating new playlist in profile page, can be used in modal or inline
     }
     return render(request, 'users/profile.html', context)
 
@@ -306,6 +312,27 @@ class AlbumPageView(TemplateView):
         context["album_length_display"] = album_length_display
         return context
     
+
+class PlaylistCreateView(LoginRequiredMixin, CreateView):
+    """Playlist creation page view. Displays a form to create a new playlist."""
+
+    template_name = "users/_new_playlist.html"
+    model = Playlist
+    form_class = PlaylistForm
+
+    def get_success_url(self):
+        """After successful playlist creation, redirect to the user's profile page."""
+        return reverse('apps.consumers_web:profile', kwargs={'username': self.request.user.username})
+
+    def form_valid(self, form):
+        """Set the user of the playlist to the currently logged-in user before saving."""
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+        
+    #     return context
 
 class ArticlesPlaceholderView(TemplateView):
     template_name = "articles.html"

@@ -46,7 +46,7 @@ class Playlist(models.Model):
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='playlists')
     name = models.CharField(max_length=255)
-    description = models.TextField()
+    description = models.TextField(blank=True)
 
     is_public = models.BooleanField(default=True)
 

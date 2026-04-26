@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}OpenChord - Profile{% endblock %}
 
@@ -28,7 +29,7 @@
   {% if request.user == profile_user %}
     <nav class="navbar-bottom-row" aria-label="Edit profile navigation">
         <div>
-            <a href="{% url 'apps.consumers_web:profile_edit' %}">Create playlist</a> <!-- Placeholder for future playlist creation page/ fake link to keep layout with form -->
+            <a href="#new-playlist-form-container">Create playlist</a>
         </div>
 
         <!-- Temporary placeholder divs to maintain layout -->
@@ -46,6 +47,22 @@
     </nav>
   {% endif %}
 </section>
+{% if request.user == profile_user %}
+    <div id="new-playlist-form-container">
+        {% include "users/_new_playlist.html" %}
+
+        temp
+            {% for list in temp_playlists %}
+                <p>{{ list.name }}</p>
+                {% for item in list.items.all %}
+                    <p>{{ item.song.title }}</p>
+                {% endfor %}
+            {% endfor %}
+
+        /temp
+
+    </div>
+{% endif %}
 
 <!-- User collection section -->
 {% if request.user == profile_user %}
@@ -58,10 +75,15 @@
                 {% for album, songs in albums.items %}
                 <article>
                     <p>{{ album.title }} <span>({{ album.release_date|date:"F Y" }})</span></p>
-                    <span class="meta">{{ album.release_date|date:"F Y" }}</span>
+                    
                     <img src="{{ album.cover.url }}" alt="{{ album.title }} cover" style="max-width: 100px; height: auto;">
                     {% for song in songs %}
                         <br><strong>{{ song.title }}</strong>
+                        <button type="button"
+                                class="add-to-playlist-btn"
+                                data-song-id="{{ song.id }}">
+                            Add to playlist
+                        </button>
                     {% endfor %}
                 </article>
                 {% endfor %}
@@ -72,29 +94,6 @@
 
     </section>
 {% endif %}
-
-<!-- backup code with class="media-card"
- 
-<h2 id="collection-title">Your collection</h2>
-        {% for artist, albums in artist_groups.items %}
-            <h3>{{ artist.name }}</h3>
-            <div class="media-grid">
-                {% for album, songs in albums.items %}
-                <article class="media-card">
-                    <h4>{{ album.title }}</h4>
-                    <span class="meta">{{ album.release_date|date:"F Y" }}</span>
-                    <img src="{{ album.cover.url }}" alt="{{ album.title }} cover">
-                    {% for song in songs %}
-                        <strong>{{ song.title }}</strong>
-                    {% endfor %}
-                </article>
-                {% endfor %}
-            </div>
-        {% empty %}
-            <p class="muted">Here you will find your music collection.</p>
-        {% endfor %}
-
--->
 
 <!-- User's public playlists section -->
 {% if request.user != profile_user %}
@@ -113,5 +112,35 @@
         </div>
     </section>
 {% endif %}
+
+<!-- Playlist modal (global, reused for all songs) -->
+<div id="playlist-modal" style="display:none;">
+    <div class="modal-content">
+        <h3>Select playlist</h3>
+        <ul id="playlist-list"></ul>
+        <button onclick="closePlaylistModal()">Close</button>
+    </div>
+</div>
+
 {% endblock %}
 
+{% block extra_js %}
+    <script src="{% static 'js/playlist.js' %}"></script>
+{% endblock %}
+<!-- 
+const list = document.getElementById('playlist-list');
+            list.innerHTML = '';
+
+            data.forEach(pl => {
+                const li = document.createElement('li');
+                li.textContent = pl.name;
+                console.log("Opening modal for song:", songId);
+                li.style.cursor = "pointer";
+                li.addEventListener("click", function () {
+                    addSongToPlaylist(pl.id);
+                });
+
+                li.onclick = () => addSongToPlaylist(pl.id);
+
+                list.appendChild(li);
+-->
