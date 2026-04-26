@@ -51,16 +51,6 @@
     <div id="new-playlist-form-container">
         {% include "users/_new_playlist.html" %}
 
-        temp
-            {% for list in temp_playlists %}
-                <p>{{ list.name }}</p>
-                {% for item in list.items.all %}
-                    <p>{{ item.song.title }}</p>
-                {% endfor %}
-            {% endfor %}
-
-        /temp
-
     </div>
 {% endif %}
 
@@ -127,20 +117,3 @@
 {% block extra_js %}
     <script src="{% static 'js/playlist.js' %}"></script>
 {% endblock %}
-<!-- 
-const list = document.getElementById('playlist-list');
-            list.innerHTML = '';
-
-            data.forEach(pl => {
-                const li = document.createElement('li');
-                li.textContent = pl.name;
-                console.log("Opening modal for song:", songId);
-                li.style.cursor = "pointer";
-                li.addEventListener("click", function () {
-                    addSongToPlaylist(pl.id);
-                });
-
-                li.onclick = () => addSongToPlaylist(pl.id);
-
-                list.appendChild(li);
--->
