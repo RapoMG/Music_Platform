@@ -225,7 +225,7 @@ class PlaylistItemViewSet(GenericViewSet):
 # Aplayer test page view
 from django.shortcuts import render
 def player_page(request):
-    return render(request, 'player/player.html')
+    return render(request, 'consumers/player/player.html')
 
 
 # Utilities
