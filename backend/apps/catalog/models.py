@@ -32,7 +32,7 @@ class Song(models.Model):
     title = models.CharField(max_length=100, default='Untitled')
     track_no = models.IntegerField(default=1)
     
-    file = models.FileField(upload_to='media/songs/')
+    file = models.FileField(upload_to='songs/')
     length = models.DurationField()
 
     lyrics = models.TextField(null=True, blank=True)

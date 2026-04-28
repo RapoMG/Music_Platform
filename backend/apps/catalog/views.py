@@ -1,4 +1,4 @@
-from django.http import FileResponse
+from django.http import FileResponse, Http404
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
@@ -54,11 +54,32 @@ class SongViewSet(ReadOnlyModelViewSet):
     serializer_class = SongSerializer
     permission_classes = [AllowAny]
 
+    @staticmethod
+    def _open_song_file(song: Song):
+        """
+        Open a song file, tolerating legacy DB paths that incorrectly include
+        the ``media/`` prefix even though MEDIA_ROOT already points there.
+        """
+        field = song.file
+        candidates = [field.name]
+
+        if field.name.startswith("media/"):
+            candidates.append(field.name.removeprefix("media/"))
+
+        last_error = None
+        for candidate in candidates:
+            try:
+                return field.storage.open(candidate, "rb")
+            except FileNotFoundError as exc:
+                last_error = exc
+
+        raise Http404("Audio file not found") from last_error
+
     @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated], url_path="audio")
     def audio(self, request, pk=None):
         """Get song audio file by id and stream it to user"""
         song = self.get_object()
-        return FileResponse(song.file.open("rb"), as_attachment=False)
+        return FileResponse(self._open_song_file(song), as_attachment=False)
 
     def get_queryset(self):
         """Get all songs from selected album"""

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 
 from apps.users.models import User
 from apps.users.validators import validate_username_not_email
@@ -60,9 +61,33 @@ class PlaylistItemSerializer(serializers.ModelSerializer):
     """Serializer for playlist item with fields prepared for frontend APlayer."""
     name = serializers.CharField(source='song.title')
     artist = serializers.CharField(source='song.album.artist.name')
-    url = serializers.FileField(source='song.file')
+    url = serializers.SerializerMethodField()
     lrc = serializers.CharField(source='song.lyrics', allow_blank=True, allow_null=True, required=False)
-    cover = serializers.FileField(source='song.album.cover', allow_null=True, required=False)
+    cover = serializers.SerializerMethodField()
+
+    def get_url(self, obj) -> str | None:
+        """Use the authenticated song streaming endpoint for APlayer."""
+        request = self.context.get("request")
+        if not request:
+            return None
+        return reverse("apps.catalog:song-audio", kwargs={"pk": obj.song_id}, request=request)
+
+    def get_cover(self, obj) -> str | None:
+        """Return an absolute cover URL when a cover exists."""
+        cover = getattr(obj.song.album, "cover", None)
+        if not cover:
+            return None
+
+        try:
+            cover_url = cover.url
+        except ValueError:
+            return None
+
+        request = self.context.get("request")
+        if request:
+            return request.build_absolute_uri(cover_url)
+        return cover_url
+
     class Meta:
         model = PlaylistItem
         fields = ('name', 'artist', 'url', 'position', 'lrc', 'cover')

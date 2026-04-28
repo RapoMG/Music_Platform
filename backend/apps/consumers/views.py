@@ -142,7 +142,7 @@ class PlaylistViewSet(ModelViewSet):
         # items = playlist.items.all().select_related('song__album', 'song__album__artist')
         items = playlist.items.select_related('song__album__artist')
 
-        serializer = PlaylistItemSerializer(items, many=True)
+        serializer = PlaylistItemSerializer(items, many=True, context={"request": request})
         
         return Response(serializer.data)
 
