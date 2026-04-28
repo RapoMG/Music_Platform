@@ -6,6 +6,7 @@ from django.contrib.auth import login, logout, update_session_auth_hash, get_use
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 
 from django.urls import reverse
 from django.views.generic import TemplateView, CreateView
@@ -333,7 +334,7 @@ class PlaylistCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class UserPlaylistsView(TemplateView):
+class UserPlaylistsView(LoginRequiredMixin,TemplateView):
     """User playlists page view. Displays all playlists of a user."""
     template_name = "consumers/users/user_playlists.html"
 
@@ -341,6 +342,11 @@ class UserPlaylistsView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         profile_user = get_object_or_404(User, username=self.kwargs.get('username'))
+
+        # Restrictet access to playlists - public playlists are visible thru profile_view
+        if self.request.user != profile_user:
+            raise PermissionDenied("You cannot view this page.")
+
         # Playlists with number of the items
         playlists = profile_user.playlists.annotate(items_count=Count('items'))
         
