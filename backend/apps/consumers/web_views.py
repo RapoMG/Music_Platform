@@ -12,7 +12,7 @@ from django.views.generic import TemplateView, CreateView
 from django.views.decorators.http import require_POST
 
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.db.models import Q, Prefetch
+from django.db.models import Q, Count, Prefetch
 
 from apps.consumers.forms import  CustomUserCreationForm, UserUpdateForm, ProfileForm, PlaylistForm
 from apps.consumers.services import (
@@ -150,26 +150,20 @@ def profile_view(request, username):
 
     #albums_groups = defaultdict(list)
     artist_groups_dd = defaultdict(lambda: defaultdict(list))
-    
 
-    # Group library items by album and artist for display in template
+    # Group library items by artist, album and songs for display in template
     for item in library:
-        #albums_groups[item.song.album].append(item.song)
         artist_groups_dd[item.song.album.artist][item.song.album].append(item.song)
 
     # Convert defaultdict to regular dict for template context
     artist_groups = {artist: dict(albums) for artist, albums in artist_groups_dd.items()}
         
 
-    temp_playlists = profile_user.playlists.prefetch_related('items__song__album__artist') # for testing playlist display in profile page, to be replaced with public playlists when we have them
-
     context = {
         'profile_user': profile_user,
         'playlists': playlists,
         'library': library,
-        #'albums_groups': albums_groups,
         'artist_groups': artist_groups,
-        'temp_playlists': temp_playlists,
         'form': PlaylistForm(), # form for creating new playlist in profile page, can be used in modal or inline
     }
     return render(request, "consumers/users/profile.html", context)
@@ -338,10 +332,22 @@ class PlaylistCreateView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
+
+class UserPlaylistsView(TemplateView):
+    """User playlists page view. Displays all playlists of a user."""
+    template_name = "consumers/users/user_playlists.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        profile_user = get_object_or_404(User, username=self.kwargs.get('username'))
+        # Playlists with number of the items
+        playlists = profile_user.playlists.annotate(items_count=Count('items'))
         
-    #     return context
+        context['profile_user'] = profile_user
+        context['playlists'] = playlists
+        return context
+    
 
 class ArticlesPlaceholderView(TemplateView):
     template_name = "consumers/articles/articles.html"

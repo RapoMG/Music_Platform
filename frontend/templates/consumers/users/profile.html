@@ -29,6 +29,9 @@
   {% if request.user == profile_user %}
     <nav class="navbar-bottom-row" aria-label="Edit profile navigation">
         <div>
+            <a href="{% url 'apps.consumers_web:user-playlists' username=request.user.username %}">My playlists</a>
+        </div>
+        <div>
             <a href="#new-playlist-form-container">Create playlist</a>
         </div>
 

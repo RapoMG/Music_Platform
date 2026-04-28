@@ -1,0 +1,39 @@
+{% extends "consumers/layout/base.html" %}
+{% load static %}
+
+{% block title %}OpenChord - Playlists{% endblock %}
+
+{% block content %}
+
+<!-- Playlist section -->
+{% if request.user == profile_user %}
+    <section class="content-section" aria-labelledby="user-playllists-title">
+    <h1 id="user-playlists-title" >Your playlists</h1>
+    <nav class="navbar-bottom-row" aria-label="Create playlist navigation">
+        
+        <a href="#new-playlist-form-container">New playlist</a>
+        
+    </nav>
+    <hr class="solid">
+    <div class="simple-list">
+    {% for playlist in playlists %}
+            <article class="list-row">
+                
+                <strong>{{ playlist.name }}</strong>
+                
+                <p>{{ playlist.items.count }} {{ playlist.items.count|pluralize:"song,songs" }}</p>
+                <!--url 'apps.consumers_web:playlist-detail' playlist.id Edit /a> -->
+                <a href="">Edit</a>
+                <!--   url 'apps.consumers_web:playlist-delete' playlist.id >Delete /a> -->
+                <a href="">Delete</a>
+            </article>
+            {% empty %}
+            <p class="muted">No playlists created yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+    <span class="meta">{{ playlist.created_at|date:"Y-m-d" }}</span>
+
+{% endif %}
+
+{% endblock %}
