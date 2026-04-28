@@ -18,14 +18,22 @@
     <div class="simple-list">
     {% for playlist in playlists %}
             <article class="list-row">
-                
+                <!-- Playlist icon placeholder - in future pls pic -->
+                <img src="{% static 'images/logo_avatar.svg' %}" alt="Playlist icon" class="playlist-icon" style="max-width: 30px; height: auto;">
                 <strong>{{ playlist.name }}</strong>
                 
-                <p>{{ playlist.items.count }} {{ playlist.items.count|pluralize:"song,songs" }}</p>
+                <p>{{ playlist.items_count }} {{ playlist.items_count|pluralize:"song,songs" }}</p>
+                <i>{{ playlist.is_public|yesno:"Public,Private" }}</i>
                 <!--url 'apps.consumers_web:playlist-detail' playlist.id Edit /a> -->
-                <a href="">Edit</a>
-                <!--   url 'apps.consumers_web:playlist-delete' playlist.id >Delete /a> -->
-                <a href="">Delete</a>
+                <a href="#">Edit</a>
+                
+                <!-- Delete button -->
+                <a href="#"
+                    class="delete-playlist-btn" 
+                    data-playlist-id="{{ playlist.id }}" 
+                    data-playlist-name="{{ playlist.name|escapejs }}">
+                    Delete
+                </a>
             </article>
             {% empty %}
             <p class="muted">No playlists created yet.</p>
@@ -36,4 +44,7 @@
 
 {% endif %}
 
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/pls_del.js' %}"></script>
 {% endblock %}
