@@ -9,7 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 
 from django.urls import reverse
-from django.views.generic import TemplateView, CreateView
+from django.views.generic import TemplateView, CreateView, UpdateView
 from django.views.decorators.http import require_POST
 
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -332,6 +332,33 @@ class PlaylistCreateView(LoginRequiredMixin, CreateView):
         """Set the user of the playlist to the currently logged-in user before saving."""
         form.instance.user = self.request.user
         return super().form_valid(form)
+    
+
+class PlaylistUpdateView(LoginRequiredMixin, UpdateView):
+    """Playlist update page view. Displays a form to edit  an existing playlist."""
+    template_name = "consumers/users/partials/_update_playlist.html"
+    model = Playlist
+    form_class = PlaylistForm
+
+    def get_success_url(self):
+        """After successful playlist update, redirect back to the current playlist edit page."""
+        return reverse(
+            'apps.consumers_web:playlist-edit',
+            kwargs={
+                'username': self.object.user.username,
+                'playlist_id': self.object.id,
+            },
+        )
+
+    def get_object(self, queryset=None):
+        """Get the playlist object to be edited, ensuring that the user is the owner."""
+        playlist_id = self.kwargs.get('playlist_id')
+        playlist = get_object_or_404(Playlist, id=playlist_id)
+
+        if playlist.user != self.request.user:
+            raise PermissionDenied("You cannot edit this playlist.")
+
+        return playlist
 
 
 class UserPlaylistsView(LoginRequiredMixin,TemplateView):
@@ -374,6 +401,7 @@ class PlaylistEditView(LoginRequiredMixin, TemplateView):
 
         context["playlist"] = playlist
         context["items"] = items
+        context["form"] = PlaylistForm(instance=playlist)
         return context
 
 class ArticlesPlaceholderView(TemplateView):

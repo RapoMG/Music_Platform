@@ -106,8 +106,64 @@
         }
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
+    async function deletePlaylistItem(button) {
+        const playlistId = Number(button.dataset.playlistId);
+        const playlistItemId = Number(button.dataset.itemId);
+        const playlistItemName = button.dataset.itemName || "this song";
+        const list = document.querySelector("[data-playlist-items]");
+        const row = button.closest(".list-row[data-item-id]");
+
+        if (!Number.isInteger(playlistId) || !Number.isInteger(playlistItemId) || !list || !row) {
+            showError("Playlist item could not be found.");
+            return;
+        }
+
+        if (!window.confirm(`Remove "${playlistItemName}" from playlist?`)) {
+            return;
+        }
+
+        button.disabled = true;
+
+        try {
+            const response = await fetch(`/api/me/playlists/${playlistId}/items/${playlistItemId}/remove/`, {
+                method: "DELETE",
+                credentials: "same-origin",
+                headers: {
+                    "X-CSRFToken": getCSRFToken(),
+                },
+            });
+
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(payload.message || "Could not remove song from playlist.");
+            }
+
+            row.remove();
+            updatePlaylistPositions(list);
+        } catch (error) {
+            button.disabled = false;
+            showError(error.message || "Could not remove song from playlist.");
+        }
+    }
+
+    function initPlaylistEditor() {
         const playlistList = document.querySelector("[data-playlist-items]");
+        const editButton = document.getElementById("edit-playlist-btn");
+        const closeButton = document.getElementById("close-playlist-btn");
+
+        if (editButton) {
+            editButton.addEventListener("click", function (event) {
+                event.preventDefault();
+                openPlaylistFormModal();
+            });
+        }
+
+        if (closeButton) {
+            closeButton.addEventListener("click", function () {
+                closePlaylistFormModal();
+            });
+        }
+
         if (!playlistList) {
             return;
         }
@@ -125,5 +181,37 @@
                 moveItem(button, "down");
             });
         });
-    });
+
+        playlistList.querySelectorAll(".delete-item-btn").forEach(function (button) {
+            button.addEventListener("click", function (event) {
+                event.preventDefault();
+                deletePlaylistItem(button);
+            });
+        });
+    }
+
+    /* Playlist Form Modal */
+    function setUpdateModalVisible(isVisible) {
+        const modalDisp = document.getElementById("playlist-data-display");
+        const modalEdit = document.getElementById("playlist-data-edit");
+        if (!modalEdit || !modalDisp) {
+            return;
+        }
+        modalDisp.style.display = isVisible ? "none" : "block";
+        modalEdit.style.display = isVisible ? "block" : "none";
+    }
+
+    function closePlaylistFormModal() {
+        setUpdateModalVisible(false);
+    }
+
+    function openPlaylistFormModal() {
+        setUpdateModalVisible(true);
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initPlaylistEditor);
+    } else {
+        initPlaylistEditor();
+    }
 })();

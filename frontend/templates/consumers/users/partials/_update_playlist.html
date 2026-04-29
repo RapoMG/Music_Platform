@@ -1,0 +1,9 @@
+<section class="content-section" aria-labelledby="new-playlist-title">
+    <form id="edit-playlist-form" method="post" action="{% url 'apps.consumers_web:playlist-update' username=playlist.user.username playlist_id=playlist.id %}">
+        {% csrf_token %}
+        {{ form.as_div }}
+        <div>
+            <button type="submit" value="submit">Save</button>
+        </div>
+    </form>
+</section>

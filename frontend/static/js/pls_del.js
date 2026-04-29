@@ -17,8 +17,15 @@ function deletePlaylist(playlistId, playlistName, element) {
     })
     .then(response => {
         if (response.status === 204) {
-            // Remove from DOM (no full reload needed)
-            element.closest('.list-row').remove();
+            const row = element.closest('.list-row');
+
+            if (row) {
+                // Remove from DOM when deleting from the playlist list page.
+                row.remove();
+            } else {
+                // Redirect when deleting from the playlist edit page navbar.
+                window.location.href = element.href;
+            }
             return;
         }
 
