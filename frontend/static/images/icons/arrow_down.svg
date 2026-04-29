@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none"
+     xmlns="http://www.w3.org/2000/svg">
+
+    <!-- Arrow -->
+    <path d="M10 16 L15 11 H12 V4 H8 V11 H5 L10 16 Z"
+          fill="#bc86e9"/>
+
+    <!-- Accent chord dot -->
+    <circle cx="10" cy="14" r="1.5" fill="#FF7A59"/>
+
+</svg>

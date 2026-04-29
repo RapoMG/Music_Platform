@@ -95,6 +95,11 @@ def move_song_in_playlist(user, item_id: int, playlist_id: int, new_position: in
     if new_position < 1 or new_position > max_position:
         raise Exception("Invalid position")
 
+    # Move the selected item out of the way first so the unique
+    # (playlist, position) constraint is not violated during shifting.
+    item.position = 0
+    item.save(update_fields=["position"])
+
     # move the item down the playlist (#3 -> #6)
     if new_position > old_position:
         items.filter(
@@ -111,11 +116,7 @@ def move_song_in_playlist(user, item_id: int, playlist_id: int, new_position: in
 
     # update the moved item
     item.position = new_position
-
-    if new_position > max_position:
-        item.position = max_position + 1
-
-    item.save()
+    item.save(update_fields=["position"])
 
     return item
     

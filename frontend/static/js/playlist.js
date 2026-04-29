@@ -117,7 +117,117 @@ async function addSongToPlaylist(playlistId) {
     }
 }
 
+function updatePlaylistPositions(list) {
+    const rows = list.querySelectorAll(".list-row[data-item-id]");
+    rows.forEach((row, index) => {
+        const position = index + 1;
+        row.dataset.position = String(position);
+
+        const label = row.querySelector(".playlist-item-position");
+        if (label) {
+            label.textContent = String(position);
+        }
+
+        const moveUpButton = row.querySelector(".move-up-btn");
+        const moveDownButton = row.querySelector(".move-down-btn");
+
+        if (moveUpButton) {
+            moveUpButton.disabled = index === 0;
+        }
+
+        if (moveDownButton) {
+            moveDownButton.disabled = index === rows.length - 1;
+        }
+    });
+}
+
+async function moveItem(itemId, direction) {
+    if (isSubmitting) {
+        return;
+    }
+
+    const playlistSection = document.querySelector("[data-playlist-id]");
+    const list = document.querySelector("[data-playlist-items]");
+    const row = document.querySelector(`.list-row[data-item-id="${itemId}"]`);
+
+    if (!playlistSection || !list || !row) {
+        showError("Playlist item could not be found.");
+        return;
+    }
+
+    const playlistId = Number(playlistSection.dataset.playlistId);
+    const currentPosition = Number(row.dataset.position);
+    const positionChange = direction === "up" ? -1 : 1;
+    const newPosition = currentPosition + positionChange;
+    const rows = Array.from(list.querySelectorAll(".list-row[data-item-id]"));
+
+    if (!Number.isInteger(playlistId) || !Number.isInteger(currentPosition)) {
+        showError("Missing playlist data.");
+        return;
+    }
+
+    if (newPosition < 1 || newPosition > rows.length) {
+        return;
+    }
+
+    isSubmitting = true;
+
+    try {
+        const response = await fetch(`/api/me/playlists/${playlistId}/items/${itemId}/reorder/`, {
+            method: "PATCH",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(),
+            },
+            body: JSON.stringify({
+                position: newPosition,
+            }),
+        });
+
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(payload.message || "Could not move song in playlist.");
+        }
+
+        const sibling = direction === "up" ? row.previousElementSibling : row.nextElementSibling;
+        if (sibling) {
+            if (direction === "up") {
+                list.insertBefore(row, sibling);
+            } else {
+                list.insertBefore(sibling, row);
+            }
+        }
+
+        updatePlaylistPositions(list);
+    } catch (error) {
+        showError(error.message || "Could not move song in playlist.");
+    } finally {
+        isSubmitting = false;
+    }
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
+    const playlistList = document.querySelector("[data-playlist-items]");
+    if (playlistList) {
+        updatePlaylistPositions(playlistList);
+
+        playlistList.addEventListener("click", (event) => {
+            const moveUpButton = event.target.closest(".move-up-btn");
+            const moveDownButton = event.target.closest(".move-down-btn");
+
+            if (moveUpButton) {
+                moveItem(moveUpButton.dataset.itemId, "up");
+                return;
+            }
+
+            if (moveDownButton) {
+                moveItem(moveDownButton.dataset.itemId, "down");
+            }
+        });
+    }
+
     document.querySelectorAll(".add-to-playlist-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
             openPlaylistModal(btn.dataset.songId);

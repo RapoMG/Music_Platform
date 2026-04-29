@@ -24,8 +24,12 @@
                 
                 <p>{{ playlist.items_count }} {{ playlist.items_count|pluralize:"song,songs" }}</p>
                 <i>{{ playlist.is_public|yesno:"Public,Private" }}</i>
-                <!--url 'apps.consumers_web:playlist-detail' playlist.id Edit /a> -->
-                <a href="#">Edit</a>
+                
+                <a href="{% url 'apps.consumers_web:playlist-edit' username=request.user.username playlist_id=playlist.id %}"
+                    class="edit-playlist-btn" 
+                    data-playlist-id="{{ playlist.id }}">
+                    Edit
+                </a>
                 
                 <!-- Delete button -->
                 <a href="#"

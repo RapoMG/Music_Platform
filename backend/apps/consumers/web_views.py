@@ -165,7 +165,7 @@ def profile_view(request, username):
         'playlists': playlists,
         'library': library,
         'artist_groups': artist_groups,
-        'form': PlaylistForm(), # form for creating new playlist in profile page, can be used in modal or inline
+        'form': PlaylistForm(), # form for creating new playlist in profile page
     }
     return render(request, "consumers/users/profile.html", context)
 
@@ -354,6 +354,27 @@ class UserPlaylistsView(LoginRequiredMixin,TemplateView):
         context['playlists'] = playlists
         return context
     
+
+class PlaylistEditView(LoginRequiredMixin, TemplateView):
+    """Playlist detail page view. Displays details of a single playlist and its songs."""
+    template_name = "consumers/users/playlist_edit.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        playlist_id = self.kwargs.get('playlist_id')
+        playlist = get_object_or_404(Playlist, id=playlist_id)
+
+        # Check if the user is the owner
+        if playlist.user != self.request.user:
+            raise PermissionDenied("You cannot edit this playlist.")
+
+        #songs = list(Song.objects.filter(playlists__playlist=playlist).order_by("playlists__added_at").all())
+        items = playlist.items.select_related('song__album__artist').order_by("position")
+
+        context["playlist"] = playlist
+        context["items"] = items
+        return context
 
 class ArticlesPlaceholderView(TemplateView):
     template_name = "consumers/articles/articles.html"

@@ -372,6 +372,38 @@ body {
     background: #efe4d2;
 }
 
+/* Playlist edit buttons */
+.move-up-btn img,
+.move-down-btn img {
+    opacity: 0.7;
+    transition: 0.2s;
+}
+
+.move-up-btn:hover img,
+.move-down-btn:hover img {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.playlist-actions {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.playlist-actions button {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 8px;
+    padding: 0.3rem;
+    cursor: pointer;
+}
+
+.playlist-actions button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
 
 @media (max-width: 1000px) {
     .navbar-top-row {

@@ -1,0 +1,102 @@
+{% extends "consumers/layout/base.html" %}
+{% load static %}
+
+{% block title %}OpenChord - Playlist Edit{% endblock %}
+
+{% block content %}
+
+<!-- Playlist section -->
+{% if request.user == playlist.user %}
+    <section class="content-section" aria-labelledby="user-playllists-title" data-playlist-id="{{ playlist.id }}">
+    <h1 id="user-playlists-title" >{{ playlist.name }}</h1>
+    
+    <!-- Playlist metadata -->
+    <div>
+        <strong>{{ playlist.items_count }} {{ playlist.items_count|pluralize:"song,songs" }}</strong>
+        <b>Created at:</b> <span class="meta">{{ playlist.created_at|date:"Y-m-d" }}</span>
+        <i>{{ playlist.is_public|yesno:"Public,Private" }}</i>
+        <b>Last updated:</b> <span class="meta">{{ playlist.updated_at|date:"Y-m-d" }}</span>
+    </div>
+
+    <!-- Playlist cover image -->    
+    <div>
+        {% if playlist.cover %}
+            <!-- Display the playlist cover if it exists, otherwise show a default image -->
+            <img src="{{ playlist.cover.url }}" alt="{{ playlist.name }} cover" style="max-width: 300px; height: auto;">
+        {% else %}
+            <img src="{% static 'images/logo_avatar.svg' %}" alt="Default playlist cover" style="max-width: 300px; height: auto;">
+        {% endif %}
+    </div>
+
+    <!-- Playlist description -->
+    <div>
+        {{ playlist.description }}
+        <p></p>
+    </div>
+
+
+    <nav class="navbar-bottom-row" aria-label="Create playlist navigation">
+        
+        <a>#Edit form</a>
+
+        <a href="{% url 'apps.consumers_web:user-playlists' username=request.user.username %}">Return to Playlists</a>
+        
+        <a href="#"
+            class="delete-playlist-btn" 
+            data-playlist-id="{{ playlist.id }}" 
+            data-playlist-name="{{ playlist.name|escapejs }}">
+            Delete
+        </a>
+        
+    </nav>
+    <hr class="solid">
+
+    <!-- Playlist items section -->  
+    <div class="simple-list" data-playlist-items>
+    {% for item in items %}
+            <article class="list-row" data-item-id="{{ item.id }}" data-position="{{ item.position }}">
+                <strong class="playlist-item-position">{{ item.position }}</strong>
+                {% if item.song.album.cover %}
+                    <img src="{{ item.song.album.cover.url }}" alt="{{ item.song.album.title }} cover" class="playlist-song-cover" style="max-width: 30px; height: auto;">
+                {% else %}
+                    <img src="{% static 'images/logo_avatar.svg' %}" alt="Default cover" class="playlist-song-cover" style="max-width: 30px; height: auto;">
+                {% endif %}
+                <strong>{{ item.song.title }}</strong>
+                {{ item.song.album.artist.name }}
+                <i>({{ item.song.album.title }})</i>
+                
+                <!-- Move up/down buttons -->
+                <div class="playlist-actions">
+                    <button type="button" class="move-up-btn" data-item-id="{{ item.id }}" aria-label="Move {{ item.song.title }} up">
+                        <img src="{% static 'images/icons/arrow_up.svg' %}" alt="Move up ⇑">
+                    </button>
+
+                    <button type="button" class="move-down-btn" data-item-id="{{ item.id }}" aria-label="Move {{ item.song.title }} down">
+                        <img src="{% static 'images/icons/arrow_down.svg' %}" alt="Move down ⇓">
+                    </button>
+                </div>
+
+                <!-- Delete song button -->
+                <a href="#"
+                    class="delete-item-btn" 
+                    data-playlist-id="{{ playlist.id }}" 
+                    data-item-id="{{ item.id }}">
+                    #Remove#
+                </a>
+            </article>
+            {% empty %}
+            
+                <p class="muted">It's so silent here. Go to collection in your profile and send few notes! </p>
+
+            {% endfor %}
+        </div>
+    </section>
+
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/pls_del.js' %}"></script>
+    <script src="{% static 'js/playlist-edit.js' %}?v=20260429"></script>
+{% endblock %}
