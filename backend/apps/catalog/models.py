@@ -6,7 +6,7 @@ class Artist(models.Model):
     """Artist model. Related to Album model."""
     name = models.CharField(max_length=100)
     description = models.TextField()
-    image = models.ImageField(upload_to='media/artists/', null=True, blank=True)
+    image = models.ImageField(upload_to='artists/', null=True, blank=True)
     
     def __str__(self):
         return self.name
