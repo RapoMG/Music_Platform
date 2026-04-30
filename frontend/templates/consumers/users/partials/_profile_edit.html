@@ -1,0 +1,31 @@
+<section class="content-section" aria-labelledby="edit-profile-title">
+    <h2 id="edit-profile-title">Edit profile</h2>
+
+    <!-- Edit profile form -->
+    <form method="post" action="{% url 'apps.consumers_web:profile_edit' username=profile_user.username %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ profile_form.as_div }}
+        <p> </p>
+        
+
+        <div>
+            <p> </p>
+            <button type="submit" value="submit">Save profile</button>
+            <p> </p>
+        </div>
+    </form>
+
+    <!-- Change password form -->
+    <form method="post" action="{% url 'apps.consumers_web:profile_edit' username=profile_user.username %}">
+        {% csrf_token %}
+        {{ password_form.as_div }}
+        <p> </p>
+        <button type="submit" name="change_password">Change password</button>
+    </form>
+
+    <!-- Close form button -->
+    <div>
+         <p> </p>
+        <button type="button" class="close-form-btn">Cancel</button>
+    </div>
+</section>

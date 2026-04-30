@@ -16,7 +16,7 @@ urlpatterns = [
     path('login/', user_login, name='login'),
     path('logout/', user_logout, name='logout'),
     path('profile/<str:username>/', profile_view, name='profile'),
-    path('profile/edit/', profile_edit, name='profile_edit'),
+    path('profile/<str:username>/edit/', profile_edit, name='profile_edit'),
 
     path('playlist/create/', PlaylistCreateView.as_view(), name='playlist-create'),
     path('playlists/<str:username>/', UserPlaylistsView.as_view(), name='user-playlists'),

@@ -165,8 +165,13 @@ def profile_view(request, username):
         'playlists': playlists,
         'library': library,
         'artist_groups': artist_groups,
-        'form': PlaylistForm(), # form for creating new playlist in profile page
+        'playlist_form': PlaylistForm(), # form for creating new playlist in profile page 
     }
+
+    # Include context form helper if user is owner of the profile 
+    if request.user == profile_user:
+        context.update(build_profile_forms(profile_user))
+
     return render(request, "consumers/users/profile.html", context)
 
 # User profile edit view
@@ -176,10 +181,17 @@ def profile_edit(request):
     Displays and handles the editing of a user's profile.
     """
 
-    profile = request.user.consumerprofile
-    profile_form = ProfileForm(request.POST or None, request.FILES or None, instance=profile)
-    user_form = UserUpdateForm(request.POST or None, instance=request.user)
-    password_form = PasswordChangeForm(request.user, request.POST or None)
+    # Forms caller from helper
+    forms = build_profile_forms(
+        request.user,
+        post_data=request.POST if request.method == "POST" else None,
+        files_data=request.FILES if request.method == "POST" else None,
+    )
+
+    # named forms from helper
+    profile_form = forms["profile_form"]
+    user_form = forms["user_form"]
+    password_form = forms["password_form"]
 
     if request.method == "POST":
         if 'save_profile' in request.POST and profile_form.is_valid() and user_form.is_valid():
@@ -193,13 +205,23 @@ def profile_edit(request):
             return redirect('apps.consumers_web:profile', username=request.user.username)
 
     context = {
-        'profile_form': profile_form,
-        'user_form': user_form,
-        'password_form': password_form,
-        'profile': profile,
+        'profile': request.user.consumerprofile,
+        **forms,  # forms from helper
     }
 
-    return render(request, "consumers/users/profile_edit.html", context)
+    return render(request, "consumers/users/partials/_profile_edit.html", context)
+
+def build_profile_forms(user, post_data=None, files_data=None):
+    """
+    Helper function to create forms for user profile editing. Used in profile_edit view and profile view.
+    Allows usage of two different forms for different purposes.
+    """
+    profile = user.consumerprofile
+    return {
+        "profile_form": ProfileForm(post_data or None, files_data or None, instance=profile),
+        "user_form": UserUpdateForm(post_data or None, instance=user),
+        "password_form": PasswordChangeForm(user, post_data or None),
+    }
 
 # Home page view
 

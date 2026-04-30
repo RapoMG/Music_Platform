@@ -5,57 +5,82 @@
 
 {% block content %}
 
-<!-- Profile section -->
+<!-- Profile section: user info / navigation -->
 <section class="content-section" aria-labelledby="profile-title">
-  <h1 id="profile-title">Profile: {{ profile_user.username }}</h1>
 
-  {% if profile_user.consumerprofile.avatar %}
-    <p><img src="{{ profile_user.consumerprofile.avatar.url }}" alt="Avatar" style="max-width: 160px; height: auto;"></p>
-  {% endif %}
+    <!-- Profile info -->
+    <h1 id="profile-title">Profile: {{ profile_user.username }}</h1>
 
-  <p><strong>Email:</strong>
+    {% if profile_user.consumerprofile.avatar %}
+        <p><img src="{{ profile_user.consumerprofile.avatar.url }}" alt="Avatar" style="max-width: 160px; height: auto;"></p>
+    {% endif %}
+
+    <p><strong>Email:</strong>
     <!-- .is_email_visible is for future upgrade   -->
     {% if profile_user.consumerprofile.is_email_visible or request.user == profile_user %}
-      {{ profile_user.email }}
+        {{ profile_user.email }}
     {% else %}
-      ukryty
+        ukryty
     {% endif %}
-  </p>
+    </p>
 
-  {% if profile_user.consumerprofile.description %}
-    <p>{{ profile_user.consumerprofile.description }}</p>
-  {% endif %}
+    {% if profile_user.consumerprofile.description %}
+        <p>{{ profile_user.consumerprofile.description }}</p>
+    {% endif %}
 
-  {% if request.user == profile_user %}
-    <nav class="navbar-bottom-row" aria-label="Edit profile navigation">
-        <div>
-            <a href="{% url 'apps.consumers_web:user-playlists' username=request.user.username %}">My playlists</a>
-        </div>
-        <div>
-            <a href="#new-playlist-form-container">Create playlist</a>
-        </div>
 
-        <!-- Temporary placeholder divs to maintain layout -->
-        <div></div>
-        <div></div>
+    <!-- Navigation for profile owner -->
+    {% if request.user == profile_user %}
+        <nav class="navbar-bottom-row" aria-label="Edit profile navigation">
+            <!-- User's playlists -->
+            <div>
+                <a href="{% url 'apps.consumers_web:user-playlists' username=request.user.username %}">My playlists</a>
+            </div>
+            <!-- Playlist creation-->
+            <div>
+                <a href="#" id="create-playlist-btn">New playlist</a>
+            </div>
 
-        <div> <!-- Placeholder for future profile editing page/ fake div to keep layout with form -->
-            <a href="{% url 'apps.consumers_web:profile_edit' %}">Edit profile</a>
-        </div>
-        <form action="{% url 'apps.consumers_web:logout' %}" method="POST">
-            {% csrf_token %}
-            <a href="{% url 'apps.consumers_web:logout' %}" onclick="event.preventDefault(); this.closest('form').submit();">Logout</a>
-        </form>
-        
-    </nav>
-  {% endif %}
+            <!-- Temporary placeholder divs to maintain layout -->
+            <div></div>
+            <div></div>
+
+            <!-- Profile editing -->
+            <div> <!-- Placeholder for future profile editing page/ fake div to keep layout with form -->
+                <a href="#" id="edit-user-btn">Edit profile</a>
+            </div>
+
+            <!-- Logout form -->
+            <form action="{% url 'apps.consumers_web:logout' %}" method="POST">
+                {% csrf_token %}
+                <a href="{% url 'apps.consumers_web:logout' %}" onclick="event.preventDefault(); this.closest('form').submit();">Logout</a>
+            </form>
+            
+        </nav>
+
+    {% endif %}
 </section>
-{% if request.user == profile_user %}
-    <div id="new-playlist-form-container">
-        {% include "consumers/users/partials/_new_playlist.html" %}
 
-    </div>
-{% endif %}
+<!-- Forms section -->
+<section>
+    <!-- Create new playlist form -->
+    {% if request.user == profile_user %}
+        <div id="new-playlist-form-container" style="display: none;">
+           
+            {% include "consumers/users/partials/_new_playlist.html" with playlist_form=playlist_form %}
+           
+        </div>
+    {% endif %}
+
+    <!-- Edit user profile form -->
+    {% if request.user == profile_user %}
+        <div id="edit-user-form-container" style="display: none;">
+           
+            {% include "consumers/users/partials/_profile_edit.html" with user_form=user_form profile_form=profile_form password_form=password_form %}
+          
+        </div>
+    {% endif %}
+</section>
 
 <!-- User collection section -->
 {% if request.user == profile_user %}
@@ -119,4 +144,5 @@
 
 {% block extra_js %}
     <script src="{% static 'js/playlist.js' %}"></script>
+    <script src="{% static 'js/profile_forms.js' %}"></script>
 {% endblock %}

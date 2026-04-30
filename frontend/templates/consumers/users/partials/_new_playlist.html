@@ -1,10 +1,15 @@
 <section class="content-section" aria-labelledby="new-playlist-title">
-    <h2 id="new-playlist-title">Create new playlist</h2>
     <form id="new-playlist-form" method="post" action="{% url 'apps.consumers_web:playlist-create' %}">
+        <h2 id="new-playlist-title">Create new playlist</h2>
         {% csrf_token %}
-        {{ form.as_div }}
+        {{ playlist_form.as_div }}
         <div>
             <button type="submit" value="submit">Create</button>
         </div>
     </form>
+    <div>
+        <!-- Close form button -->
+         <p> </p>
+        <button type="button" class="close-form-btn">Cancel</button>
+    </div>
 </section>
