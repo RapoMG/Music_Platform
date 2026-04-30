@@ -401,6 +401,7 @@ class UserPlaylistsView(LoginRequiredMixin,TemplateView):
         
         context['profile_user'] = profile_user
         context['playlists'] = playlists
+        context['playlist_form'] = PlaylistForm() # form for creating new playlist
         return context
     
 

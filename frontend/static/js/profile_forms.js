@@ -26,14 +26,15 @@ function initFormsDisplay() {
     const updateProfile = document.getElementById("edit-user-btn");
     const createPlaylist = document.getElementById("create-playlist-btn");
 
-    //const closeForms = document.getElementById("close-form-btn");
-    if (!updateProfile || !createPlaylist) {
-        return;
+    // Add event listeners
+    if (updateProfile) {
+        updateProfile.addEventListener("click", openUpdateProfile);
     }
-    updateProfile.addEventListener("click", openUpdateProfile);
-    createPlaylist.addEventListener("click", openCreatePlaylist);
-    //closeForms.addEventListener("click", closeBothForms);
 
+    if (createPlaylist) {
+        createPlaylist.addEventListener("click", openCreatePlaylist);
+    }
+    
     document.querySelectorAll(".close-form-btn").forEach(btn => {
         btn.addEventListener("click", closeBothForms);
     });

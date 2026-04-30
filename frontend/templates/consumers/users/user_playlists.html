@@ -10,45 +10,61 @@
     <section class="content-section" aria-labelledby="user-playllists-title">
     <h1 id="user-playlists-title" >Your playlists</h1>
     <nav class="navbar-bottom-row" aria-label="Create playlist navigation">
-        
-        <a href="#new-playlist-form-container">New playlist</a>
+        <div>
+
+            <a href="#" id="create-playlist-btn">New playlist</a>
+        </div>
         
     </nav>
     <hr class="solid">
+
+    <!-- New playlist form -->
+    <div id="new-playlist-form-container" style="display: none;">
+           
+        {% include "consumers/users/partials/_new_playlist.html" with playlist_form=playlist_form %}
+        
+    </div>
+
+    <!-- Playlist items section -->
     <div class="simple-list">
     {% for playlist in playlists %}
-            <article class="list-row">
-                <!-- Playlist icon placeholder - in future pls pic -->
-                <img src="{% static 'images/logo_avatar.svg' %}" alt="Playlist icon" class="playlist-icon" style="max-width: 30px; height: auto;">
-                <strong>{{ playlist.name }}</strong>
-                
-                <p>{{ playlist.items_count }} {{ playlist.items_count|pluralize:"song,songs" }}</p>
-                <i>{{ playlist.is_public|yesno:"Public,Private" }}</i>
-                
-                <a href="{% url 'apps.consumers_web:playlist-edit' username=request.user.username playlist_id=playlist.id %}"
-                    class="edit-playlist-btn" 
-                    data-playlist-id="{{ playlist.id }}">
-                    Edit
-                </a>
-                
-                <!-- Delete button -->
-                <a href="/"
-                    class="delete-playlist-btn" 
-                    data-playlist-id="{{ playlist.id }}" 
-                    data-playlist-name="{{ playlist.name|escapejs }}">
-                    Delete
-                </a>
-            </article>
-            {% empty %}
-            <p class="muted">No playlists created yet.</p>
-            {% endfor %}
+        <article class="list-row">
+            
+            <!-- Playlist icon placeholder - in future pls pic -->
+            <img src="{% static 'images/logo_avatar.svg' %}" alt="Playlist icon" class="playlist-icon" style="max-width: 30px; height: auto;">
+            
+            <strong>{{ playlist.name }}</strong>
+            
+            <p>{{ playlist.items_count }} {{ playlist.items_count|pluralize:"song,songs" }}</p>
+            
+            <i>{{ playlist.is_public|yesno:"Public,Private" }}</i>
+            
+            <!-- Edit button -->
+            <a href="{% url 'apps.consumers_web:playlist-edit' username=request.user.username playlist_id=playlist.id %}"
+                class="edit-playlist-btn" 
+                data-playlist-id="{{ playlist.id }}">
+                Edit
+            </a>
+            
+            <!-- Delete button -->
+            <a href="/"
+                class="delete-playlist-btn" 
+                data-playlist-id="{{ playlist.id }}" 
+                data-playlist-name="{{ playlist.name|escapejs }}">
+                Delete
+            </a>
+
+        </article>
+    {% empty %}
+        <p class="muted">No playlists created yet.</p>
+    {% endfor %}
         </div>
     </section>
-    <span class="meta">{{ playlist.created_at|date:"Y-m-d" }}</span>
 
 {% endif %}
 
 {% endblock %}
 {% block extra_js %}
     <script src="{% static 'js/pls_del.js' %}"></script>
+    <script src="{% static 'js/profile_forms.js' %}"></script>
 {% endblock %}
