@@ -1,5 +1,7 @@
 {% extends "consumers/layout/base.html" %}
 
+{% load static %}
+
 {% block title %}OpenChord - Search{% endblock %}
 
 {% block content %}
@@ -58,7 +60,15 @@
     <div class="simple-list">
         {% for user in users_results %}
             <a  href="{% url 'apps.consumers_web:profile' user.username %}" >
-                <article class="list-row"><strong>{{ user.username }}</strong></article>
+                <article class="list-row">
+                    <strong> 
+                    {% if user.consumerprofile.avatar %}
+                        <img src="{{ user.consumerprofile.avatar.url }}" alt="{{ user.username }}" style="max-width: 30px; height: auto;">
+                    {% else %}
+                        <img src="{% static 'images/logo_avatar.svg' %}" alt="Default avatar" style="max-width: 30px; height: auto;">
+                    {% endif %}
+                    {{ user.username }}</strong>
+                </article>
             </a>
         {% empty %}
             <p class="muted">No users found.</p>

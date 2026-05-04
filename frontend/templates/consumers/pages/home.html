@@ -33,7 +33,9 @@
         {% for album in popular_albums %}
             <article class="media-card">
                 <span class="meta">{{ album.artist.name }}</span>
-                <img src="{{ album.cover.url }}" alt="{{ album.title }}">
+                <a  href="{% url 'apps.consumers_web:album_details' album.id %}" >
+                    <img src="{{ album.cover.url }}" alt="{{ album.title }}">
+                </a>
                 <strong>{{ album.title }}</strong>
             </article>
         {% empty %}
@@ -49,8 +51,8 @@
         <p>Placeholder for upcoming service news.</p>
     </div>
     <div class="placeholder-box">
-        <p>Articles are not implemented yet.</p>
-        <p>Endpoint to create: <code>GET /api/articles/</code> and article detail endpoint.</p>
+        <p>There will be <del>dragons</del> articles.</p>
+        <p><s>You</s> We must gather <s>your party</s> editorial team.</p>
     </div>
 </section>
 
