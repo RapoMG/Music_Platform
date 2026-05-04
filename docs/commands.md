@@ -1,36 +1,34 @@
-Commands
 # Commands
 
-All commands below are executed from the project root.
+All examples below assume the current repository layout, where `manage.py` is located in `backend/`.
 
-## With Docker
+## Docker
 
-### Build add start environment
-Compose only uses a .env file (no extension) next to docker-compose.yml for interpolation. .env.dev must be named explicitly.
+### Build and start
 
 ```bash
 docker compose --env-file .env.dev up --build
 ```
 
-### Start local environment
+### Start in background
 
 ```bash
 docker compose up -d
 ```
 
-### Stop local environment
+### Stop services
 
 ```bash
 docker compose down
 ```
 
-### Execute command in Terminal while Docker containeris working
-These are the versions of commands run from the IDE terminal or PowerShell
+### Run Django commands inside the web container
 
 ```bash
-docker compose exec <service name> python manage.py <command>
+docker compose exec web python manage.py <command>
 ```
-Example:
+
+Examples:
 
 ```bash
 docker compose exec web python manage.py makemigrations
@@ -39,80 +37,73 @@ docker compose exec web python manage.py createsuperuser
 docker compose exec web python manage.py test
 ```
 
-## Inside Docker container shell
+## Local Development
 
-### Run Django management commands
+Change into `backend/` first:
+
 ```bash
-python backend/manage.py <command>
+cd backend
 ```
+
+Then run commands such as:
+
+```bash
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+python manage.py test
+python manage.py shell
+```
+
+## Migrations
+
+```bash
+cd backend
+python manage.py makemigrations
+python manage.py migrate
+```
+
+## Static Files
+
+```bash
+cd backend
+python manage.py collectstatic --noinput
+```
+
+## Create a New App
+
+```bash
+cd backend
+python manage.py startapp app_name apps/app_name
+```
+
+After creating an app:
+- move files if needed,
+- register the app in settings,
+- wire URLs if the app exposes views.
+
+## Seed Catalog Data
+
+```bash
+cd backend
+python manage.py seed_catalog
+```
+
+Arguments:
+- `--artists` default `5`
+- `--albums` default `3`
+- `--songs` default `10`
+- `--genres` default `6`
+
 Example:
 
 ```bash
-python backend/manage.py migrate
-python backend/manage.py createsuperuser
-python backend/manage.py runserver
-```
-
-### Create migrations
-```bash
-python backend/manage.py makemigrations
-```
-
-### Apply migrations
-```bash
-python backend/manage.py migrate
-```
-
-### Create superuser
-```bash
-python backend/manage.py createsuperuser
-```
-
-### Collect static files
-```bash
-python backend/manage.py collectstatic --noinput
-```
-
-### Run tests
-```bash
-python backend/manage.py test
-```
-
-### Create a new Django app
-```bash
-python backend/manage.py startapp app_name backend/apps/app_name
-```
-After creating the app, move configuration files if needed and register the app in settings.
-
-### Open Django shell
-```bash
-python backend/manage.py shell
-```
-
-### Run development server without Docker
-```bash
-python backend/manage.py runserver
-```
-
-## Seed db with fake data
-
-### Artists, albums, songs and genres
-
-```bash
-python manage.py seed_catalog
-```
-arguments:
-    --artists (default=5)
-    --albums (default=3)
-    --songs (default=10)
-    --genres (default=6)
-
-example: 
-```bash
+cd backend
 python manage.py seed_catalog --artists 7 --songs 12
 ```
 
-With Docker: 
+Docker equivalent:
+
 ```bash
 docker compose exec web python manage.py seed_catalog --artists 7 --songs 12
 ```

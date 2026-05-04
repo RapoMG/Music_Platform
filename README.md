@@ -1,149 +1,80 @@
-# Music Platform API
+# OpenChord
 
-Backend application for a music platform built with **Django** and **Django REST Framework**.
+OpenChord is a Django music platform centered on browsing artists and albums, managing personal libraries, and creating user playlists.
 
-The project is designed as an API-first service for a web application and future mobile client. It supports two main user roles:
+The repository contains both:
+- a JSON API built with Django REST Framework,
+- a server-rendered web UI built with Django templates.
 
-- **Consumers** — can browse music, listen to tracks, create playlists, purchase tracks or albums, and download purchased content.
-- **Creators** — can manage albums, tracks, covers, descriptions, pricing, genre tags, and tour-related information.
+## Current Scope
 
-## Project status
+Implemented areas in the codebase include:
+- custom user model with email and account type,
+- authentication with Django auth, Djoser, and JWT support,
+- catalog models for artists, albums, songs, and genres,
+- public artist, album, genre, profile, and search pages,
+- consumer profiles, libraries, and playlist management,
+- seed data via a custom management command,
+- Django admin customization,
+- basic automated tests.
 
-This project is currently under active development.
-
-Planned core features:
-- user authentication and authorization
-- consumer and creator roles
-- album and track management
-- playlist creation
-- music purchases
-- access to purchased content
-- creator news and tour information
-- recommendation-oriented metadata such as genres and tags
-
-## Tech stack
-
-- **Python**
-- **Django**
-- **Django REST Framework**
-- **PostgreSQL**
-- **Docker**
-- **Git**
-
-Planned or possible additions:
-- JWT authentication
-- Nginx
-- Celery
-- Redis
-- cloud media storage
-- separate frontend client
-- mobile application client
-
-## Architecture overview
-
-This repository is organized as an API backend with supporting project documentation and infrastructure configuration.
-
-- `backend/` — Django REST Framework backend
-- `docs/` — project documentation, architectural notes, diagrams, decisions
-- `docker/` — Docker configuration
-- `frontend/` — reserved for future frontend client
-- `requirements/` — Python dependency files
-- `scripts/` — helper scripts for local development
-
-## Project structure
+## Project Layout
 
 ```text
-music-platform/
-├─ .gitignore
-├─ .editorconfig
-├─ README.md
-├─ .env.example
-├─ docker-compose.yml
-├─ requirements/
-│  ├─ base.txt
-│  ├─ dev.txt
-│  └─ prod.txt
-├─ docs/
-├─ docker/
-├─ backend/
-│  ├─ manage.py
-│  ├─ config/
-│  │  └─ settings/
-│  │     ├─ base.py
-│  │     ├─ dev.py
-│  │     └─ prod.py
-│  ├─ apps/
-│  │  ├─ common/
-│  │  ├─ users/
-│  │  ├─ creators/
-│  │  ├─ consumers/
-│  │  └─ *purchases/
-│  ├─ media/
-│  │  ├─ albums/
-│  │  ├─ artists/
-│  │  └─ songs/
-│  ├─ static/
-│  └─ templates/
-├─ frontend/
-└─ scripts/
+F:\Django_Final_Project
+|-- backend/
+|   |-- apps/
+|   |   |-- catalog/
+|   |   |-- consumers/
+|   |   `-- users/
+|   |-- config/
+|   `-- manage.py
+|-- docs/
+|-- docker/
+|-- frontend/
+|-- notes/
+`-- requirements/
 ```
 
-## API endpoints
+## Quick Start
 
-Base API prefix: `/api/`
+### Docker
 
-Authentication (Djoser + JWT):
-- `/api/auth/` endpoints from `djoser.urls`
-- `/api/auth/` JWT endpoints from `djoser.urls.jwt`
+```bash
+docker compose --env-file .env.dev up --build
+```
 
-### Catalog (router)
+### Local commands
 
-The following resources are registered with DRF `DefaultRouter` and expose standard actions:
-- `GET /api/artists/`, `POST /api/artists/`, `GET /api/artists/{id}/`, `PUT/PATCH/DELETE /api/artists/{id}/`
-- `GET /api/albums/`, `POST /api/albums/`, `GET /api/albums/{id}/`, `PUT/PATCH/DELETE /api/albums/{id}/`
-- `GET /api/songs/`, `POST /api/songs/`, `GET /api/songs/{id}/`, `PUT/PATCH/DELETE /api/songs/{id}/`
-- `GET /api/genres/`, `POST /api/genres/`, `GET /api/genres/{id}/`, `PUT/PATCH/DELETE /api/genres/{id}/`
+All Django commands should be run from the `backend/` directory:
 
-### Consumers
+```bash
+cd backend
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
 
-Public:
-- `GET /api/consumers/profile/{user_id}/`
-- `GET /api/users/{username}/playlists/`
-- `GET /api/playlists/{id}/`
+### Seed sample data
 
-Authenticated (`IsAuthenticated`):
-- `GET /api/consumers/library/`
-- `POST /api/consumers/library/songs/{song_id}/add/`
-- `POST /api/consumers/library/albums/{album_id}/add/`
+```bash
+cd backend
+python manage.py seed_catalog
+```
 
-### My playlists (router)
+## Documentation
 
-Registered with `DefaultRouter` as `me/playlists`.
+Project documentation lives in `docs/`:
+- `docs/index.md` - starting point
+- `docs/setup.md` - local environment and commands
+- `docs/architecture.md` - application structure
+- `docs/domain-model.md` - key model relationships
+- `docs/features.md` - user-facing functionality
+- `docs/api.md` - API overview
+- `docs/testing.md` - tests and test targets
+- `docs/admin.md` - Django admin notes
+- `docs/decisions/` - short architecture/design decisions
 
-Playlist CRUD:
-- `GET /api/me/playlists/`
-- `POST /api/me/playlists/`
-- `GET /api/me/playlists/{id}/`
-- `PUT /api/me/playlists/{id}/`
-- `PATCH /api/me/playlists/{id}/`
-- `DELETE /api/me/playlists/{id}/`
+## Notes
 
-APlayer data:
-- `GET /api/me/playlists/{id}/player/`
-- Returns a list of playlist items formatted for APlayer (`name`, `artist`, `url`, `lrc`, `cover`, `position`).
-
-Playlist items:
-- `POST /api/me/playlists/{playlist_id}/items/add/`
-  Request body:
-  ```json
-  { "song_id": 123 }
-  ```
-- `DELETE /api/me/playlists/{playlist_id}/items/{item_id}/remove/`
-- `PATCH /api/me/playlists/{playlist_id}/items/{item_id}/reorder/`
-  Request body:
-  ```json
-  { "position": 2 }
-  ```
-
-Temporary test page:
-- `GET /api/player/` (server-rendered test page for APlayer)
+This repository has evolved from an earlier API-first plan into a mixed web-and-API Django application. The documentation in `docs/` reflects the current codebase rather than older roadmap ideas.
